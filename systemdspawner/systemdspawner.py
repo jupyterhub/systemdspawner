@@ -1,0 +1,73 @@
+import os
+import subprocess
+from traitlets import Unicode, Bool, Int
+from tornado import gen
+
+from jupyterhub.spawner import Spawner
+from jupyterhub.utils import random_port
+
+
+class SystemdSpawner(Spawner):
+    mem_limit = Int(
+        0,
+        help='Memory limit for each user. Set to 0 (default) for no limits'
+    ).tag(config=True)
+
+    def load_state(self, state):
+        super().load_state(state)
+        if 'unit_name' in state:
+            self.unit_name = state['unit_name']
+
+    def get_state(self):
+        state = super().get_state()
+        state['unit_name'] = self.unit_name
+        return state
+
+    @gen.coroutine
+    def start(self):
+        self.port = random_port()
+        self.unit_name = 'jupyter-{id}-singleuser'.format(id=self.user.id)
+        env = self.get_env()
+
+        cmd = ['/usr/bin/systemd-run']
+
+        cmd.extend(['--unit', self.unit_name])
+        for key, value in env.items():
+            cmd.append('--setenv={key}={value}'.format(key=key, value=value))
+
+        self.log.info('memlimit is %s' % self.mem_limit)
+        if self.mem_limit != 0:
+            cmd.extend([
+                '--property=MemoryAccounting=yes',
+                '--property=MemoryLimit={mem}M'.format(mem=self.mem_limit),
+                '--property=MemoryMax={mem}M'.format(mem=self.mem_limit)
+            ])
+
+        cmd.extend(self.cmd)
+        cmd.extend(self.get_args())
+
+        self.proc = subprocess.Popen(cmd, start_new_session=True)
+
+        return (self.ip or '127.0.0.1', self.port)
+
+    @gen.coroutine
+    def stop(self):
+        subprocess.check_output([
+            '/bin/systemctl',
+            'stop',
+            self.unit_name
+        ])
+
+    @gen.coroutine
+    def poll(self):
+        if hasattr(self, 'unit_name'):
+            try:
+                if subprocess.check_output([
+                    '/bin/systemctl',
+                    'is-active',
+                    self.unit_name
+                ]).decode('utf-8').strip() == 'active':
+                    return None
+            except subprocess.CalledProcessError as e:
+                return e.returncode
+        return 0
