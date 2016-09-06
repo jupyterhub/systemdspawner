@@ -1,4 +1,5 @@
 import os
+import pwd
 import subprocess
 from traitlets import Unicode, Bool, Int
 from tornado import gen
@@ -43,8 +44,12 @@ class SystemdSpawner(Spawner):
 
         cmd.extend(['--unit', self.unit_name])
         if self.run_as_system_users:
-            # FIXME: Check if this user exists before starting this
-            cmd.extend(['--uid', self.user.name])
+            try:
+                pwnam = pwd.getpwnam(self.user.name)
+            except KeyError:
+                self.log.exception('No user named %s found in the system' % self.user.name)
+                raise
+            cmd.extend(['--uid', str(pwnam.pw_uid), '--gid', str(pwnam.pw_gid)])
 
         if self.isolate_tmp:
             cmd.extend(['--property=PrivateTmp=yes'])
