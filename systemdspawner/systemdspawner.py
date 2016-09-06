@@ -15,8 +15,13 @@ class SystemdSpawner(Spawner):
 
     run_as_system_users = Bool(
         True,
-        help='Run each service with the uid of the user it is authenticated as.'
+        help='Run each service with the uid of the user it is authenticated as'
     ).tag(config=True)
+
+    isolate_tmp = Bool(
+        True,
+        help='Give each notebook user their own /tmp, isolated from the system & each other'
+    )
 
     def load_state(self, state):
         super().load_state(state)
@@ -40,6 +45,9 @@ class SystemdSpawner(Spawner):
         if self.run_as_system_users:
             # FIXME: Check if this user exists before starting this
             cmd.extend(['--uid', self.user.name])
+
+        if self.isolate_tmp:
+            cmd.extend(['--property=PrivateTmp=yes'])
         for key, value in env.items():
             cmd.append('--setenv={key}={value}'.format(key=key, value=value))
 
