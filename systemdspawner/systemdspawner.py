@@ -1,7 +1,6 @@
-import os
 import pwd
 import subprocess
-from traitlets import Unicode, Bool, Int
+from traitlets import Bool, Int
 from tornado import gen
 
 from jupyterhub.spawner import Spawner
@@ -53,10 +52,10 @@ class SystemdSpawner(Spawner):
 
         if self.isolate_tmp:
             cmd.extend(['--property=PrivateTmp=yes'])
+
         for key, value in env.items():
             cmd.append('--setenv={key}={value}'.format(key=key, value=value))
 
-        self.log.info('memlimit is %s' % self.mem_limit)
         if self.mem_limit != 0:
             cmd.extend([
                 '--property=MemoryAccounting=yes',
