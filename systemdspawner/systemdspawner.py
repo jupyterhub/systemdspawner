@@ -1,4 +1,5 @@
 import pwd
+import time
 import subprocess
 from traitlets import Bool, Int
 from tornado import gen
@@ -68,7 +69,13 @@ class SystemdSpawner(Spawner):
 
         self.proc = subprocess.Popen(cmd, start_new_session=True)
 
-        return (self.ip or '127.0.0.1', self.port)
+        for i in range(self.start_timeout):
+            is_up = yield self.poll()
+            if is_up is None:
+                return (self.ip or '127.0.0.1', self.port)
+            time.sleep(1)
+
+        return None
 
     @gen.coroutine
     def stop(self):
