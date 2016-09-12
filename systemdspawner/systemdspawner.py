@@ -19,8 +19,10 @@ class SystemdSpawner(Spawner):
         help='Run each service with the uid of the user it is authenticated as'
     ).tag(config=True)
 
+    # FIXME: Do not allow enabling this for systemd versions < 227,
+    # since that is when it was introduced.
     isolate_tmp = Bool(
-        True,
+        False,
         help='Give each notebook user their own /tmp, isolated from the system & each other'
     )
 
