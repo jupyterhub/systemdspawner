@@ -38,6 +38,29 @@ class SystemdSpawner(Spawner):
     def start(self):
         self.port = random_port()
         self.unit_name = 'jupyter-{id}-singleuser'.format(id=self.user.id)
+
+        # if a previous attempt to start the service for this user was made and failed,
+        # systemd keeps the service around in 'failed' state. This will prevent future
+        # services with the same name from being started. While this behavior makes sense
+        # (since if it fails & is deleted immediately, we will lose state info), in our
+        # case it is ok to reset it and move on when trying to start again.
+        try:
+            if subprocess.check_output([
+                '/bin/systemctl',
+                'is-failed',
+                self.unit_name
+            ]).decode('utf-8').strip() == 'failed':
+                subprocess.check_output([
+                    '/bin/systemctl',
+                    'reset-failed',
+                    self.unit_name
+                ])
+                self.log.info('Found unit {unit} in failed state, reset state to inactive'.format(
+                    unit=self.unit_name)
+                )
+        except subprocess.CalledProcessError as e:
+            # This is returned when the unit is *not* in failed state. bah!
+            pass
         env = self.get_env()
 
         cmd = ['/usr/bin/systemd-run']
