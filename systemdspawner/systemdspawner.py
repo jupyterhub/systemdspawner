@@ -58,10 +58,10 @@ class SystemdSpawner(Spawner):
             cmd.append('--setenv={key}={value}'.format(key=key, value=value))
 
         if self.mem_limit != 0:
+            # FIXME: Detect & use proper properties for v1 vs v2 cgroups
             cmd.extend([
                 '--property=MemoryAccounting=yes',
                 '--property=MemoryLimit={mem}M'.format(mem=self.mem_limit),
-                '--property=MemoryMax={mem}M'.format(mem=self.mem_limit)
             ])
 
         cmd.extend(self.cmd)
