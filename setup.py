@@ -9,4 +9,5 @@ setup(
     author_email='yuvipanda@riseup.net',
     license='3 Clause BSD',
     packages=['systemdspawner'],
+    install_requires=['jupyterhub']
 )
