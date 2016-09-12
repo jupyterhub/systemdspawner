@@ -1,0 +1,8 @@
+[Service]
+ExecStart=/usr/local/bin/jupyterhub --no-ssl --config /etc/local/jupyterhub/jupyterhub_config.py
+ReadOnlyDirectories=/
+ReadWriteDirectories=/var/lib/jupyterhub /var/log/ /proc/self/
+WorkingDirectory=/var/local/lib/jupyterhub
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE CAP_AUDIT_WRITE CAP_SETGID CAP_SETUID
+PrivateDevices=yes
+PrivateTmp=yes
