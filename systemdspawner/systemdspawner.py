@@ -14,6 +14,11 @@ class SystemdSpawner(Spawner):
         help='Memory limit for each user. Set to 0 (default) for no limits'
     ).tag(config=True)
 
+    cpu_limit = Int(
+        0,
+        help='CPU limit for each user. 100 means 1 full CPU, 30 is 30% of 1 CPU, 200 is 2 CPUs, etc. Set to 0 (default) for no limits'
+    ).tag(config=True)
+
     run_as_system_users = Bool(
         True,
         help='Run each service with the uid of the user it is authenticated as'
@@ -87,6 +92,15 @@ class SystemdSpawner(Spawner):
             cmd.extend([
                 '--property=MemoryAccounting=yes',
                 '--property=MemoryLimit={mem}M'.format(mem=self.mem_limit),
+            ])
+
+        if self.cpu_limit != 0:
+            # FIXME: Detect & use proper properties for v1 vs v2 cgroups
+            # FIXME: Make sure that the kernel supports CONFIG_CFS_BANDWIDTH
+            #        otherwise this doesn't have any effect.
+            cmd.extend([
+                '--property=CPUAccounting=yes',
+                '--property=CPUQuota={quota}%'.format(quota=self.cpu_limit)
             ])
 
         cmd.extend(self.cmd)
