@@ -41,6 +41,19 @@ class SystemdSpawner(Spawner):
         state['unit_name'] = self.unit_name
         return state
 
+    def _expand_user_vars(self, string):
+        """
+        Expand user related variables in a given string
+
+        Currently expands:
+          {USERNAME} -> Name of the user
+          {USERID} -> UserID
+        """
+        return string.format(
+            USERNAME=self.user.name,
+            USERID=self.user.id
+        )
+
     @gen.coroutine
     def start(self):
         self.port = random_port()
@@ -103,7 +116,7 @@ class SystemdSpawner(Spawner):
                 '--property=CPUQuota={quota}%'.format(quota=self.cpu_limit)
             ])
 
-        cmd.extend(self.cmd)
+        cmd.extend([self._expand_user_vars(c) for c in  self.cmd])
         cmd.extend(self.get_args())
 
         self.proc = subprocess.Popen(cmd, start_new_session=True)
