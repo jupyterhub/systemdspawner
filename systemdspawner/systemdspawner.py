@@ -10,9 +10,9 @@ from jupyterhub.utils import random_port
 
 
 class SystemdSpawner(Spawner):
-    mem_limit = Int(
-        0,
-        help='Memory limit for each user. Set to 0 (default) for no limits'
+    mem_limit = Unicode(
+        '',
+        help='Memory limit for each user. Set to \'\' (default) for no limits. Uses suffixes that are recognized by Systemd (M, G, etc)'
     ).tag(config=True)
 
     cpu_limit = Int(
@@ -130,11 +130,11 @@ class SystemdSpawner(Spawner):
 
         cmd.append('--setenv=SHELL={shell}'.format(shell=self.default_shell))
 
-        if self.mem_limit != 0:
+        if self.mem_limit != '':
             # FIXME: Detect & use proper properties for v1 vs v2 cgroups
             cmd.extend([
                 '--property=MemoryAccounting=yes',
-                '--property=MemoryLimit={mem}M'.format(mem=self.mem_limit),
+                '--property=MemoryLimit={mem}'.format(mem=self.mem_limit),
             ])
 
         if self.cpu_limit != 0:
