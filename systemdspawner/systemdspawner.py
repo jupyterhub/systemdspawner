@@ -2,7 +2,7 @@ import os
 import pwd
 import time
 import subprocess
-from traitlets import Bool, Int, Unicode
+from traitlets import Bool, Int, Unicode, List
 from tornado import gen
 
 from jupyterhub.spawner import Spawner
@@ -40,6 +40,11 @@ class SystemdSpawner(Spawner):
     default_shell = Unicode(
         os.environ.get('SHELL', '/bin/bash'),
         help='Default shell for users on the notebook terminal'
+    ).tag(config=True)
+
+    extra_paths = List(
+        [],
+        help='Extra paths to add to the $PATH environment variable. {USERNAME} and {USERID} are expanded',
     ).tag(config=True)
 
     def load_state(self, state):
@@ -107,6 +112,14 @@ class SystemdSpawner(Spawner):
 
         if self.isolate_tmp:
             cmd.extend(['--property=PrivateTmp=yes'])
+
+        if self.extra_paths:
+            env['PATH'] = '{curpath}:{extrapath}'.format(
+                curpath=env['PATH'],
+                extrapath=':'.join(
+                    [self._expand_user_vars(p) for p in self.extra_paths]
+                )
+            )
 
         for key, value in env.items():
             cmd.append('--setenv={key}={value}'.format(key=key, value=value))
