@@ -1,7 +1,7 @@
 import pwd
 import time
 import subprocess
-from traitlets import Bool, Int
+from traitlets import Bool, Int, Unicode
 from tornado import gen
 
 from jupyterhub.spawner import Spawner
@@ -29,7 +29,12 @@ class SystemdSpawner(Spawner):
     isolate_tmp = Bool(
         False,
         help='Give each notebook user their own /tmp, isolated from the system & each other'
-    )
+    ).tag(config=True)
+
+    user_workingdir = Unicode(
+        '/home/{USERNAME}',
+        help='Path to start each notebook user on. {USERNAME} and {USERID} are expanded'
+    ).tag(config=True)
 
     def load_state(self, state):
         super().load_state(state)
@@ -99,6 +104,10 @@ class SystemdSpawner(Spawner):
 
         for key, value in env.items():
             cmd.append('--setenv={key}={value}'.format(key=key, value=value))
+
+        cmd.append('--property=WorkingDirectory={workingdir}'.format(
+            workingdir=self._expand_user_vars(self.user_workingdir)
+        ))
 
         if self.mem_limit != 0:
             # FIXME: Detect & use proper properties for v1 vs v2 cgroups
