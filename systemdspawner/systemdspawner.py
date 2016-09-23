@@ -1,3 +1,4 @@
+import os
 import pwd
 import time
 import subprocess
@@ -34,6 +35,11 @@ class SystemdSpawner(Spawner):
     user_workingdir = Unicode(
         '/home/{USERNAME}',
         help='Path to start each notebook user on. {USERNAME} and {USERID} are expanded'
+    ).tag(config=True)
+
+    default_shell = Unicode(
+        os.environ.get('SHELL', '/bin/bash'),
+        help='Default shell for users on the notebook terminal'
     ).tag(config=True)
 
     def load_state(self, state):
@@ -108,6 +114,8 @@ class SystemdSpawner(Spawner):
         cmd.append('--property=WorkingDirectory={workingdir}'.format(
             workingdir=self._expand_user_vars(self.user_workingdir)
         ))
+
+        cmd.append('--setenv=SHELL={shell}'.format(shell=self.default_shell))
 
         if self.mem_limit != 0:
             # FIXME: Detect & use proper properties for v1 vs v2 cgroups
