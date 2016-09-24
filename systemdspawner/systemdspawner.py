@@ -154,7 +154,8 @@ class SystemdSpawner(Spawner):
         cmd.extend([self._expand_user_vars(c) for c in  self.cmd])
         cmd.extend(self.get_args())
 
-        self.proc = subprocess.Popen(cmd, start_new_session=True)
+        self.log.debug('Running systemd-run with: %s' % ' '.join(cmd))
+        subprocess.check_output(cmd)
 
         for i in range(self.start_timeout):
             is_up = yield self.poll()
