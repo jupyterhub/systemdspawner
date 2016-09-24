@@ -47,6 +47,11 @@ class SystemdSpawner(Spawner):
         help='Extra paths to add to the $PATH environment variable. {USERNAME} and {USERID} are expanded',
     ).tag(config=True)
 
+    unit_name_template = Unicode(
+        'jupyter-{USERID}-singleuser',
+        help='Template to use to make the systemd service names. {USERNAME} and {USERID} are expanded}'
+    ).tag(config=True)
+
     def load_state(self, state):
         super().load_state(state)
         if 'unit_name' in state:
@@ -73,7 +78,7 @@ class SystemdSpawner(Spawner):
     @gen.coroutine
     def start(self):
         self.port = random_port()
-        self.unit_name = 'jupyter-{id}-singleuser'.format(id=self.user.id)
+        self.unit_name = self._expand_user_vars(self.unit_name_template)
 
         # if a previous attempt to start the service for this user was made and failed,
         # systemd keeps the service around in 'failed' state. This will prevent future
