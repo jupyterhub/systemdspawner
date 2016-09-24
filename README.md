@@ -1,13 +1,10 @@
 # systemdspawner
 
 The **systemdspawner** enables JupyterHub to spawn single-user
-notebook servers using systemd.
+notebook servers using [systemd](https://www.freedesktop.org/wiki/Software/systemd/).
 
 Additional information about JupyterHub spawners can be found in the
-[JupyterHub documentation](https://jupyterhub.readthedocs.io/en/latest/),
-especially the [Spawners configuration section](https://jupyterhub.readthedocs.io/en/latest/spawners.html#spawners).
-
-Additional information can be found on the [systemd site](https://www.freedesktop.org/wiki/Software/systemd/).
+[JupyterHub documentation](https://jupyterhub.readthedocs.io/en/latest/).
 
 ## License
 
@@ -15,6 +12,24 @@ We use a shared copyright model that enables all contributors to maintain the
 copyright on their contributions.
 
 All code is licensed under the terms of the revised BSD license.
+
+## Installation ##
+
+There is no package on PyPI yet, so you have to install directly from git.
+Once there is a stable tested version we'll have a version on PyPI.
+
+You can install it right now with:
+
+```
+pip install git+https://github.com/jupyterhub/systemdspawner.git@master
+```
+
+You can enable it for your jupyterhub with the following lines in your
+`jupyterhub_config.py` file
+
+```python
+c.JupyterHub.spawner_class = 'systemdspawner.SystemdSpawner'
+```
 
 ## Getting help
 
