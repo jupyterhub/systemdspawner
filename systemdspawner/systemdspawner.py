@@ -52,15 +52,9 @@ class SystemdSpawner(Spawner):
         help='Template to use to make the systemd service names. {USERNAME} and {USERID} are expanded}'
     ).tag(config=True)
 
-    def load_state(self, state):
-        super().load_state(state)
-        if 'unit_name' in state:
-            self.unit_name = state['unit_name']
-
-    def get_state(self):
-        state = super().get_state()
-        state['unit_name'] = self.unit_name
-        return state
+    @property
+    def unit_name(self):
+        return self._expand_user_vars(self.unit_name_template)
 
     def _expand_user_vars(self, string):
         """
@@ -78,7 +72,6 @@ class SystemdSpawner(Spawner):
     @gen.coroutine
     def start(self):
         self.port = random_port()
-        self.unit_name = self._expand_user_vars(self.unit_name_template)
 
         # if a previous attempt to start the service for this user was made and failed,
         # systemd keeps the service around in 'failed' state. This will prevent future
