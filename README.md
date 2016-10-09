@@ -116,7 +116,7 @@ CPU, `400` represents 4 full CPUs, `50` represents half of one CPU, etc. This is
 the same metric you see in the `top` tool.
 
 ```python
-c.SystemdSpawner.mem_limit = 4
+c.SystemdSpawner.cpu_limit = 4
 ```
 
 This defaults to `None`, which provides no CPU limits.
