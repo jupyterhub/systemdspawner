@@ -7,6 +7,10 @@ notebook servers using [systemd](https://www.freedesktop.org/wiki/Software/syste
 
 The primary use case for the Systemd Spawner is to provide the isolation benefits
 of Linux Containers (Docker, rkt, etc) without the complexity of image management.
+You also get to use all the traditional system administration tools you know and love,
+without having to learn an extra layer of container related tooling. This is very important
+for installations upto a certain size.
+
 The following features are currently available:
 
 1. Limit maximum memory available to each user
@@ -23,12 +27,10 @@ The following features are currently available:
 7. Restrict users from being able to sudo to root (or as other users) from within the
    notebook. This is an additional security measure to make sure that a compromise of
    a jupyterhub notebook instance doesn't allow root access from the web.
-8. Automatically collect logs from each individual user notebook into `journald`, which
+8. Restrict what paths users can write to. This allows making / readonly and only granting
+   write rights to specific paths, for additional security.
+9. Automatically collect logs from each individual user notebook into `journald`, which
    also automatically handles rotation & retention.
-
-You also get to use all the traditional system administration tools you know and love,
-without having to learn an extra layer of container related tooling. This is very important
-for installations upto a certain size.
 
 ## Requirements ##
 
@@ -220,6 +222,38 @@ c.SystemdSpawner.disable_user_sudo = True
 ```
 
 Defaults to false.
+
+### `readonly_paths` ###
+
+List of filesystem paths that should be mounted readonly for the users' notebook server. This
+will override any filesystem permissions that might exist. Subpaths of paths that are mounted
+readonly can be marked readwrite with `readwrite_paths`. This is useful for marking `/` as
+readonly & only whitelisting the paths where notebook users can write.
+
+```python
+c.SystemdSpawner.readonly_paths = ['/']
+```
+
+`{USERNAME}` and `{USERID}` in this configuration value will be expanded to the
+appropriate values for the user being spawned.
+
+Defaults to `None` which disables this feature.
+
+### `readwrite_paths` ###
+
+List of filesystem paths that should be mounted readwrite for the users' notebook server. This
+only makes sense if `readonly_paths` is used to make some paths readonly - this can then be
+used to make specific paths readwrite. This does *not* override filesystem permissions - the
+user needs to have appropriate rights to write to these paths.
+
+```python
+c.SystemdSpawner.readwrite_paths = ['/home/{USERNAME}']
+```
+
+`{USERNAME}` and `{USERID}` in this configuration value will be expanded to the
+appropriate values for the user being spawned.
+
+Defaults to `None` which disables this feature.
 
 ## Getting help
 

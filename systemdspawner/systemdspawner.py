@@ -54,6 +54,18 @@ class SystemdSpawner(Spawner):
         help='Set to true to disallow becoming root (or any other user) via sudo or other means from inside the notebook',
     ).tag(config=True)
 
+    readonly_paths = List(
+        None,
+        allow_none=True,
+        help='List of paths that should be marked readonly from the user notebook. Subpaths can be overriden by setting readwrite_paths',
+    ).tag(config=True)
+
+    readwrite_paths = List(
+        None,
+        allow_none=True,
+        help='List of paths that should be marked read-write from the user notebook. Usually used to make a subpath of a readonly path writeable',
+    ).tag(config=True)
+
     @property
     def unit_name(self):
         return self._expand_user_vars(self.unit_name_template)
@@ -148,6 +160,17 @@ class SystemdSpawner(Spawner):
         if self.disable_user_sudo:
             cmd.append('--property=NoNewPrivileges=yes')
 
+        if self.readonly_paths is not None:
+            cmd.extend([
+                self._expand_user_vars('--property=ReadOnlyPaths=-{path}'.format(path=path))
+                for path in self.readonly_paths
+            ])
+
+        if self.readwrite_paths is not None:
+            cmd.extend([
+                self._expand_user_vars('--property=ReadWritePaths={path}'.format(path=path))
+                for path in self.readwrite_paths
+            ])
         cmd.extend([self._expand_user_vars(c) for c in  self.cmd])
         cmd.extend(self.get_args())
 
