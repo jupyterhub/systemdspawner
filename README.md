@@ -62,6 +62,12 @@ needs to be run as root to be able to set memory & cpu limits. Simple sudo rules
 do not help, since unrestricted access to `systemd-run` is equivalent to root. We
 will explore hardening approaches soon.
 
+### Local Users ###
+
+Each user's server is spawned to run as a local unix user account. Hence this spawner
+requires that all users who authenticate have a local account already present on the
+machine.
+
 ## Installation ##
 
 There is no package on PyPI yet, so you have to install directly from git.
