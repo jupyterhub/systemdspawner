@@ -54,6 +54,11 @@ class SystemdSpawner(Spawner):
         help='Template to use to make the systemd service names. {USERNAME} and {USERID} are expanded}'
     ).tag(config=True)
 
+    disable_user_sudo = Bool(
+        False,
+        help='Set to true to disallow becoming root (or any other user) via sudo or other means from inside the notebook',
+    ).tag(config=True)
+
     @property
     def unit_name(self):
         return self._expand_user_vars(self.unit_name_template)
@@ -145,6 +150,9 @@ class SystemdSpawner(Spawner):
                 '--property=CPUAccounting=yes',
                 '--property=CPUQuota={quota}%'.format(quota=self.cpu_limit)
             ])
+
+        if self.disable_user_sudo:
+            cmd.append('--property=NoNewPrivileges=yes')
 
         cmd.extend([self._expand_user_vars(c) for c in  self.cmd])
         cmd.extend(self.get_args())
