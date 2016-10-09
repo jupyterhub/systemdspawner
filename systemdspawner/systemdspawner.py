@@ -22,13 +22,6 @@ class SystemdSpawner(Spawner):
         allow_none=True,
     ).tag(config=True)
 
-    # FIXME: Do not allow enabling this for systemd versions < 227,
-    # since that is when it was introduced.
-    isolate_tmp = Bool(
-        False,
-        help='Give each notebook user their own /tmp, isolated from the system & each other'
-    ).tag(config=True)
-
     user_workingdir = Unicode(
         '/home/{USERNAME}',
         help='Path to start each notebook user on. {USERNAME} and {USERID} are expanded'
@@ -47,6 +40,13 @@ class SystemdSpawner(Spawner):
     unit_name_template = Unicode(
         'jupyter-{USERID}-singleuser',
         help='Template to use to make the systemd service names. {USERNAME} and {USERID} are expanded}'
+    ).tag(config=True)
+
+    # FIXME: Do not allow enabling this for systemd versions < 227,
+    # since that is when it was introduced.
+    isolate_tmp = Bool(
+        False,
+        help='Give each notebook user their own /tmp, isolated from the system & each other'
     ).tag(config=True)
 
     disable_user_sudo = Bool(
