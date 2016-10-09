@@ -38,7 +38,7 @@ class SystemdSpawner(Spawner):
     ).tag(config=True)
 
     unit_name_template = Unicode(
-        'jupyter-{USERID}-singleuser',
+        'jupyter-{USERNAME}-singleuser',
         help='Template to use to make the systemd service names. {USERNAME} and {USERID} are expanded}'
     ).tag(config=True)
 
