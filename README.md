@@ -13,6 +13,31 @@ copyright on their contributions.
 
 All code is licensed under the terms of the revised BSD license.
 
+## Requirements ##
+
+### Systemd ###
+Systemd Spawner requires you to use a Linux Distro that ships with at least
+systemd v211. We use `systemd-run` to launch notebooks, and it gained the
+ability to set service properties in that version. You can check which version of
+systemd is running with:
+
+```bash
+$ systemd --version | head -1
+systemd 231
+```
+The following distros (and newer versions of them!) should all work fine:
+
+* Ubuntu 16.04
+* Debian Jessie
+* CentOS 7 and derivatives
+
+### Kernel Configuration ###
+
+Certain kernel options need to be enabled for the CPU / Memory limiting features
+to work. If these are not enabled, then CPU / Memory limiting will just fail
+silently. You can check if your kernel supports these features by running
+the [`check-kernel.bash`](check-kernel.bash) script.
+
 ## Installation ##
 
 There is no package on PyPI yet, so you have to install directly from git.
