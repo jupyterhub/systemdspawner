@@ -22,11 +22,6 @@ class SystemdSpawner(Spawner):
         allow_none=True,
     ).tag(config=True)
 
-    run_as_system_users = Bool(
-        True,
-        help='Run each service with the uid of the user it is authenticated as'
-    ).tag(config=True)
-
     # FIXME: Do not allow enabling this for systemd versions < 227,
     # since that is when it was introduced.
     isolate_tmp = Bool(
@@ -107,13 +102,12 @@ class SystemdSpawner(Spawner):
         cmd = ['/usr/bin/systemd-run']
 
         cmd.extend(['--unit', self.unit_name])
-        if self.run_as_system_users:
-            try:
-                pwnam = pwd.getpwnam(self.user.name)
-            except KeyError:
-                self.log.exception('No user named %s found in the system' % self.user.name)
-                raise
-            cmd.extend(['--uid', str(pwnam.pw_uid), '--gid', str(pwnam.pw_gid)])
+        try:
+            pwnam = pwd.getpwnam(self.user.name)
+        except KeyError:
+            self.log.exception('No user named %s found in the system' % self.user.name)
+            raise
+        cmd.extend(['--uid', str(pwnam.pw_uid), '--gid', str(pwnam.pw_gid)])
 
         if self.isolate_tmp:
             cmd.extend(['--property=PrivateTmp=yes'])
