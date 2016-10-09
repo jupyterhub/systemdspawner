@@ -11,13 +11,15 @@ from jupyterhub.utils import random_port
 
 class SystemdSpawner(Spawner):
     mem_limit = Unicode(
-        '',
-        help='Memory limit for each user. Set to \'\' (default) for no limits. Uses suffixes that are recognized by Systemd (M, G, etc)'
+        None,
+        help='Memory limit for each user. Set to `None` (default) for no limits. Uses suffixes that are recognized by Systemd (M, G, etc)',
+        allow_none=True,
     ).tag(config=True)
 
     cpu_limit = Int(
-        0,
-        help='CPU limit for each user. 100 means 1 full CPU, 30 is 30% of 1 CPU, 200 is 2 CPUs, etc. Set to 0 (default) for no limits'
+        None,
+        help='CPU limit for each user. 100 means 1 full CPU, 30 is 30% of 1 CPU, 200 is 2 CPUs, etc. Set to `None` (default) for no limits',
+        allow_none=True,
     ).tag(config=True)
 
     run_as_system_users = Bool(
@@ -128,14 +130,14 @@ class SystemdSpawner(Spawner):
 
         cmd.append('--setenv=SHELL={shell}'.format(shell=self.default_shell))
 
-        if self.mem_limit != '':
+        if self.mem_limit is not None:
             # FIXME: Detect & use proper properties for v1 vs v2 cgroups
             cmd.extend([
                 '--property=MemoryAccounting=yes',
                 '--property=MemoryLimit={mem}'.format(mem=self.mem_limit),
             ])
 
-        if self.cpu_limit != 0:
+        if self.cpu_limit is not None:
             # FIXME: Detect & use proper properties for v1 vs v2 cgroups
             # FIXME: Make sure that the kernel supports CONFIG_CFS_BANDWIDTH
             #        otherwise this doesn't have any effect.
