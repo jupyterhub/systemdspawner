@@ -5,40 +5,40 @@ notebook servers using [systemd](https://www.freedesktop.org/wiki/Software/syste
 
 ## Features ##
 
-The primary use case for the Systemd Spawner is to provide the isolation benefits
+The primary use case for the Systemd Spawner is to provide the isolation & security benefits
 of Linux Containers (Docker, rkt, etc) without the complexity of image management.
-You also get to use all the traditional system administration tools you know and love,
-without having to learn an extra layer of container related tooling. This is very important
-for installations upto a certain size.
+You get to use all the traditional system administration tools you know, love & hate,
+without having to learn an extra layer of container related tooling.
 
 The following features are currently available:
 
-1. Limit maximum memory available to each user
-2. Limit maximum CPU available to each user
+1. Limit maximum memory permitted to each user. If they request more memory than this,
+   it will not be granted (`malloc` will fail, which will manifest in different ways
+   depending on the programming language you are using)
+2. Limit maximum CPU available to each user.
 3. Provide fair scheduling to users independent of the number of processes they
    are running. For example, user A running 100 CPU hogging processes will usually
    mean user B's 2 CPU hogging processes never get enough CPU time, since scheduling
    is traditionally per-process. With Systemd Spawner, both these users' processes
    will as a whole get the same amount of CPU time, regardless of number of processes.
-4. Accurate accounting of memory and CPU usage (via cgroups, which systemd uses internally)
-5. `/tmp` isolation (each user gets their own `/tmp`, to prevent accidental information
-   leakage)
-6. Spawn containers as specific users on the system (this can replace SudoSpawner)
+4. Accurate accounting of memory and CPU usage (via cgroups, which systemd uses internally).
+   You can check this out with `systemd-cgtop`.
+5. `/tmp` isolation - each user gets their own `/tmp`, to prevent accidental information
+   leakage.
+6. Spawn notebook servers as specific local users on the system (this can replace SudoSpawner)
 7. Restrict users from being able to sudo to root (or as other users) from within the
    notebook. This is an additional security measure to make sure that a compromise of
-   a jupyterhub notebook instance doesn't allow root access from the web.
+   a jupyterhub notebook instance doesn't allow root access.
 8. Restrict what paths users can write to. This allows making / readonly and only granting
    write rights to specific paths, for additional security.
 9. Automatically collect logs from each individual user notebook into `journald`, which
-   also automatically handles rotation & retention.
+   also handles log rotation.
 
 ## Requirements ##
 
 ### Systemd ###
 Systemd Spawner requires you to use a Linux Distro that ships with at least
-systemd v211. We use `systemd-run` to launch notebooks, and it gained the
-ability to set service properties in that version. You can check which version of
-systemd is running with:
+systemd v211. You can check which version of systemd is running with:
 
 ```bash
 $ systemd --version | head -1
@@ -53,7 +53,7 @@ The following distros (and newer versions of them!) should all work fine:
 ### Kernel Configuration ###
 
 Certain kernel options need to be enabled for the CPU / Memory limiting features
-to work. If these are not enabled, then CPU / Memory limiting will just fail
+to work. If these are not enabled, CPU / Memory limiting will just fail
 silently. You can check if your kernel supports these features by running
 the [`check-kernel.bash`](check-kernel.bash) script.
 
@@ -90,7 +90,7 @@ c.JupyterHub.spawner_class = 'systemdspawner.SystemdSpawner'
 
 ## Configuration ##
 
-Lots of configuration options to chose from! You can put all of these in your
+Lots of configuration options to chose from! You should put all of these in your
 `jupyterhub_config.py` file.
 
 ### `mem_limit` ###
@@ -121,7 +121,7 @@ the same metric you see in the `top` tool.
 c.SystemdSpawner.cpu_limit = 4
 ```
 
-This defaults to `None`, which provides no CPU limits.
+Defaults to `None`, which provides no CPU limits.
 
 #### CPU fairness ####
 
@@ -152,7 +152,7 @@ appropriate values for the user being spawned.
 c.SystemdSpawner.user_workingdir = '/home/{USERNAME}'
 ```
 
-This defaults to `/home/{USERNAME}`.
+Defaults to `/home/{USERNAME}`.
 
 ### `default_shell` ###
 
@@ -179,6 +179,8 @@ c.SystemdSpawner.extra_paths = ['/home/{USERNAME}/conda/bin']
 `{USERNAME}` and `{USERID}` in this configuration value will be expanded to the
 appropriate values for the user being spawned.
 
+Defaults to `[]` which doesn't add any extra paths to `PATH`
+
 ### `unit_name_template` ###
 
 Template to form the Systemd Service unit name for each user notebook server. This
@@ -192,7 +194,7 @@ c.SystemdSpawner.unit_name_template = 'jupyter-{USERNAME}-singleuser'
 `{USERNAME}` and `{USERID}` in this configuration value will be expanded to the
 appropriate values for the user being spawned.
 
-It defaults to `jupyter-{USERNAME}-singleuser`
+Defaults to `jupyter-{USERNAME}-singleuser`
 
 ### `isolate_tmp` ###
 
@@ -255,10 +257,10 @@ appropriate values for the user being spawned.
 
 Defaults to `None` which disables this feature.
 
-## Getting help
+## Getting help ##
 
-We encourage you to ask questions on the [mailing list](https://groups.google.com/forum/#!forum/jupyter),
-and you may participate in development discussions or get live help on [Gitter](https://gitter.im/jupyterhub/jupyterhub).
+We encourage you to ask questions on the [mailing list](https://groups.google.com/forum/#!forum/jupyter).
+You can also participate in development discussions or get live help on [Gitter](https://gitter.im/jupyterhub/jupyterhub).
 
 ## License ##
 
