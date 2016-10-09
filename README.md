@@ -97,17 +97,17 @@ Specifies the maximum memory that can be used by each individual user. It can be
 specified as an absolute byte value, or a percentage of total physical memory
 on the machine. You can use the suffixes `K`, `M`, `G` or `T` to mean Kilobyte,
 Megabyte, Gigabyte or Terabyte respectively. Using a `%` as a suffix makes it
-be that % of total physical memory.
+be that % of total physical memory. Setting it to `None` disables memory limits.
 
 Even if you want individual users to use as much memory as possible, it is still
 good practice to set a memory limit of 80-90%. This prevents one user from being
 able to single handedly take down the machine accidentally by OOMing it.
 
 ```python
-c.SystemdSpawner.mem_limit = '80%'
+c.SystemdSpawner.mem_limit = '4G'
 ```
 
-It defaults to `None`, which provides no memory limits.
+Defaults to `90%`.
 
 ### `cpu_limit` ###
 
