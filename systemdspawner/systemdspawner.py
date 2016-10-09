@@ -195,14 +195,12 @@ class SystemdSpawner(Spawner):
 
     @gen.coroutine
     def poll(self):
-        if hasattr(self, 'unit_name'):
-            try:
-                if subprocess.check_output([
-                    '/bin/systemctl',
-                    'is-active',
-                    self.unit_name
-                ]).decode('utf-8').strip() == 'active':
-                    return None
-            except subprocess.CalledProcessError as e:
-                return e.returncode
-        return 0
+        try:
+            if subprocess.check_call([
+                '/bin/systemctl',
+                'is-active',
+                self.unit_name
+            ], stdout=open('/dev/null', 'w'), stderr=open('/dev/null', 'w')) == 0:
+                return None
+        except subprocess.CalledProcessError as e:
+            return e.returncode
