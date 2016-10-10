@@ -162,13 +162,13 @@ class SystemdSpawner(Spawner):
 
         if self.readonly_paths is not None:
             cmd.extend([
-                self._expand_user_vars('--property=ReadOnlyPaths=-{path}'.format(path=path))
+                self._expand_user_vars('--property=ReadOnlyDirectories=-{path}'.format(path=path))
                 for path in self.readonly_paths
             ])
 
         if self.readwrite_paths is not None:
             cmd.extend([
-                self._expand_user_vars('--property=ReadWritePaths={path}'.format(path=path))
+                self._expand_user_vars('--property=ReadWriteDirectories={path}'.format(path=path))
                 for path in self.readwrite_paths
             ])
         cmd.extend([self._expand_user_vars(c) for c in  self.cmd])

@@ -294,7 +294,7 @@ appropriate values for the user being spawned.
 Defaults to `None` which disables this feature.
 
 This requires systemd version > 228. If you enable this in earlier versions, spawning will
-fail.
+fail. It can also contain only directories (not files) until systemd version 231.
 
 ### `readwrite_paths` ###
 
@@ -313,7 +313,7 @@ appropriate values for the user being spawned.
 Defaults to `None` which disables this feature.
 
 This requires systemd version > 228. If you enable this in earlier versions, spawning will
-fail.
+fail. It can also contain only directories (not files) until systemd version 231.
 
 ## Getting help ##
 
