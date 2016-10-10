@@ -72,7 +72,8 @@ The following features are currently available:
 ### Systemd ###
 
 Systemd Spawner requires you to use a Linux Distro that ships with at least
-systemd v211. You can check which version of systemd is running with:
+systemd v211. The security related features require systemd v228 or v227. We recommend running
+with at least systemd v228. You can check which version of systemd is running with:
 
 ```bash
 $ systemd --version | head -1
@@ -81,7 +82,7 @@ systemd 231
 The following distros (and newer versions of them!) should all work fine:
 
 * Ubuntu 16.04
-* Debian Jessie
+* Debian Jessie with Systemd from Backports
 * CentOS 7 and derivatives
 
 ### Kernel Configuration ###
@@ -270,6 +271,9 @@ c.SystemdSpawner.disable_user_sudo = True
 
 Defaults to false.
 
+This requires systemd version > 228. If you enable this in earlier versions, spawning will
+fail.
+
 ### `readonly_paths` ###
 
 List of filesystem paths that should be mounted readonly for the users' notebook server. This
@@ -286,6 +290,9 @@ appropriate values for the user being spawned.
 
 Defaults to `None` which disables this feature.
 
+This requires systemd version > 228. If you enable this in earlier versions, spawning will
+fail.
+
 ### `readwrite_paths` ###
 
 List of filesystem paths that should be mounted readwrite for the users' notebook server. This
@@ -301,6 +308,9 @@ c.SystemdSpawner.readwrite_paths = ['/home/{USERNAME}']
 appropriate values for the user being spawned.
 
 Defaults to `None` which disables this feature.
+
+This requires systemd version > 228. If you enable this in earlier versions, spawning will
+fail.
 
 ## Getting help ##
 
