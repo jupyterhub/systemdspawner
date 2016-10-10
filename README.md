@@ -200,6 +200,9 @@ c.SystemdSpawner.user_workingdir = '/home/{USERNAME}'
 
 Defaults to `/home/{USERNAME}`.
 
+This requires systemd version > 227. If you enable this in earlier versions, spawning will
+fail.
+
 ### `default_shell` ###
 
 The default shell to use for the terminal in the notebook. Sets the `SHELL` environment
