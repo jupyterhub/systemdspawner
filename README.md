@@ -1,3 +1,11 @@
+**[Features](#features)** |
+**[Requirements](#requirements)** |
+**[Installation](#installation)** |
+**[Configuration](#configuration)** |
+**[Getting help](#getting-help)** |
+**[License](#license)** |
+**[Resources](#resources)**
+
 # systemdspawner #
 
 The **systemdspawner** enables JupyterHub to spawn single-user
@@ -5,38 +13,64 @@ notebook servers using [systemd](https://www.freedesktop.org/wiki/Software/syste
 
 ## Features ##
 
-The primary use case for the Systemd Spawner is to provide the isolation & security benefits
-of Linux Containers (Docker, rkt, etc) without the complexity of image management.
-You get to use all the traditional system administration tools you know, love & hate,
-without having to learn an extra layer of container related tooling.
+If you want to use Linux Containers (Docker, rkt, etc) for isolation and
+security benefits, but don't want the headache and complexity of
+container image management, then you should use the SystemdSpawner.
+
+With the **systemdspawner**, you get to use the familiar, traditional system
+administration tools, whether you love or meh them, without having to learn an
+extra layer of container related tooling.
 
 The following features are currently available:
 
-1. Limit maximum memory permitted to each user. If they request more memory than this,
-   it will not be granted (`malloc` will fail, which will manifest in different ways
-   depending on the programming language you are using)
+1. Limit maximum memory permitted to each user.
+
+   If they request more memory than this, it will not be granted (`malloc`
+   will fail, which will manifest in different ways depending on the
+   programming language you are using).
+
 2. Limit maximum CPU available to each user.
+
 3. Provide fair scheduling to users independent of the number of processes they
-   are running. For example, user A running 100 CPU hogging processes will usually
-   mean user B's 2 CPU hogging processes never get enough CPU time, since scheduling
+   are running.
+
+   For example, if User A is running 100 CPU hogging processes, it will usually
+   mean User B's 2 CPU hogging processes will never get enough CPU time as scheduling
    is traditionally per-process. With Systemd Spawner, both these users' processes
-   will as a whole get the same amount of CPU time, regardless of number of processes.
+   will as a whole get the same amount of CPU time, regardless of number of processes
+   being run. Good news if you are User B.
+
 4. Accurate accounting of memory and CPU usage (via cgroups, which systemd uses internally).
+
    You can check this out with `systemd-cgtop`.
-5. `/tmp` isolation - each user gets their own `/tmp`, to prevent accidental information
+
+5. `/tmp` isolation.
+
+   Each user gets their own `/tmp`, to prevent accidental information
    leakage.
-6. Spawn notebook servers as specific local users on the system (this can replace SudoSpawner)
+
+6. Spawn notebook servers as specific local users on the system.
+
+   This can replace the need for using SudoSpawner.
+
 7. Restrict users from being able to sudo to root (or as other users) from within the
-   notebook. This is an additional security measure to make sure that a compromise of
+   notebook.
+
+   This is an additional security measure to make sure that a compromise of
    a jupyterhub notebook instance doesn't allow root access.
-8. Restrict what paths users can write to. This allows making / readonly and only granting
-   write rights to specific paths, for additional security.
-9. Automatically collect logs from each individual user notebook into `journald`, which
-   also handles log rotation.
+
+8. Restrict what paths users can write to.
+
+   This allows making `/` read only and only granting write privileges to
+   specific paths, for additional security.
+
+9. Automatically collect logs from each individual user notebook into
+   `journald`, which also handles log rotation.
 
 ## Requirements ##
 
 ### Systemd ###
+
 Systemd Spawner requires you to use a Linux Distro that ships with at least
 systemd v211. You can check which version of systemd is running with:
 
@@ -77,7 +111,7 @@ Once there is a stable tested version we'll have a version on PyPI.
 
 You can install it right now with:
 
-```
+```bash
 pip install git+https://github.com/jupyterhub/systemdspawner.git@master
 ```
 
@@ -90,8 +124,8 @@ c.JupyterHub.spawner_class = 'systemdspawner.SystemdSpawner'
 
 ## Configuration ##
 
-Lots of configuration options to chose from! You should put all of these in your
-`jupyterhub_config.py` file.
+Lots of configuration options for you to choose! You should put all of these
+in your `jupyterhub_config.py` file.
 
 ### `mem_limit` ###
 
@@ -271,9 +305,13 @@ All code is licensed under the terms of the revised BSD license.
 
 ## Resources
 
+#### JupyterHub and systemdspawner
+
 - [Reporting Issues](https://github.com/jupyterhub/systemdspawner/issues)
 - [Documentation for JupyterHub](http://jupyterhub.readthedocs.io/en/latest/) | [PDF (latest)](https://media.readthedocs.org/pdf/jupyterhub/latest/jupyterhub.pdf) | [PDF (stable)](https://media.readthedocs.org/pdf/jupyterhub/stable/jupyterhub.pdf)
 - [Documentation for JupyterHub's REST API](http://petstore.swagger.io/?url=https://raw.githubusercontent.com/jupyter/jupyterhub/master/docs/rest-api.yml#/default)
+
+#### Jupyter
 
 - [Documentation for Project Jupyter](http://jupyter.readthedocs.io/en/latest/index.html) | [PDF](https://media.readthedocs.org/pdf/jupyter/latest/jupyter.pdf)
 - [Project Jupyter website](https://jupyter.org)
