@@ -134,7 +134,7 @@ in your `jupyterhub_config.py` file:
 - **[`extra_paths`](#extra_paths)**
 - **[`unit_name_template`](#unit_name_template)**
 - **[`isolate_tmp`](#isolate_tmp)**
-- **[`disable_user_sudo`](#disable_user_sudo`)**
+- **[`disable_user_sudo`](#disable_user_sudo)**
 - **[`readonly_paths`](#readonly_paths)**
 - **[`readwrite_paths`](#readwrite_paths)**
 
