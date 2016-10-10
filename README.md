@@ -125,7 +125,18 @@ c.JupyterHub.spawner_class = 'systemdspawner.SystemdSpawner'
 ## Configuration ##
 
 Lots of configuration options for you to choose! You should put all of these
-in your `jupyterhub_config.py` file.
+in your `jupyterhub_config.py` file:
+
+- **[`mem_limit`](#mem_limit)**
+- **[`cpu_limit`](#cpu_limit)**
+- **[`user_workingdir`](#user_workingdir)**
+- **[`default_shell`](#default_shell)**
+- **[`extra_paths`](#extra_paths)**
+- **[`unit_name_template`](#unit_name_template)**
+- **[`isolate_tmp`](#isolate_tmp)**
+- **[`disable_user_sudo`](#disable_user_sudo`)**
+- **[`readonly_paths`](#readonly_paths)**
+- **[`readwrite_paths`](#readwrite_paths)**
 
 ### `mem_limit` ###
 
