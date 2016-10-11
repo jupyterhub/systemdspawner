@@ -66,6 +66,18 @@ class SystemdSpawner(Spawner):
         help='List of paths that should be marked read-write from the user notebook. Usually used to make a subpath of a readonly path writeable',
     ).tag(config=True)
 
+    # Not configurable, just used internally. Might be exposed if anyone needs it,
+    # but I doubt anyone would.
+    systemctl_cmd = List(
+        ['/usr/bin/sudo', '/bin/systemctl'],
+        help='Path to use to execute the systemctl binary. Should include sudo too.'
+    )
+
+    systemd_run_cmd = List(
+        ['/usr/bin/sudo', '/usr/bin/systemd-run'],
+        help='Path to use to execute the systemd-run binary. Should include sudo too.'
+    )
+
     @property
     def unit_name(self):
         return self._expand_user_vars(self.unit_name_template)
@@ -93,13 +105,11 @@ class SystemdSpawner(Spawner):
         # (since if it fails & is deleted immediately, we will lose state info), in our
         # case it is ok to reset it and move on when trying to start again.
         try:
-            if subprocess.check_output([
-                '/bin/systemctl',
+            if subprocess.check_output(self.systemctl_cmd + [
                 'is-failed',
                 self.unit_name
             ]).decode('utf-8').strip() == 'failed':
-                subprocess.check_output([
-                    '/bin/systemctl',
+                subprocess.check_output(self.systemctl_cmd + [
                     'reset-failed',
                     self.unit_name
                 ])
@@ -111,7 +121,7 @@ class SystemdSpawner(Spawner):
             pass
         env = self.get_env()
 
-        cmd = ['/usr/bin/systemd-run']
+        cmd = self.systemd_run_cmd[:]
 
         cmd.extend(['--unit', self.unit_name])
         try:
@@ -187,8 +197,7 @@ class SystemdSpawner(Spawner):
 
     @gen.coroutine
     def stop(self):
-        subprocess.check_output([
-            '/bin/systemctl',
+        subprocess.check_output(self.systemctl_cmd + [
             'stop',
             self.unit_name
         ])
@@ -196,8 +205,7 @@ class SystemdSpawner(Spawner):
     @gen.coroutine
     def poll(self):
         try:
-            if subprocess.check_call([
-                '/bin/systemctl',
+            if subprocess.check_call(self.systemctl_cmd + [
                 'is-active',
                 self.unit_name
             ], stdout=open('/dev/null', 'w'), stderr=open('/dev/null', 'w')) == 0:
