@@ -79,11 +79,6 @@ with at least systemd v228. You can check which version of systemd is running wi
 $ systemd --version | head -1
 systemd 231
 ```
-The following distros (and newer versions of them!) should all work fine:
-
-* Ubuntu 16.04
-* Debian Jessie with Systemd from Backports
-* CentOS 7 and derivatives
 
 ### Kernel Configuration ###
 
@@ -104,6 +99,27 @@ will explore hardening approaches soon.
 Each user's server is spawned to run as a local unix user account. Hence this spawner
 requires that all users who authenticate have a local account already present on the
 machine.
+
+### Linux Distro compatibility ##
+
+#### Ubuntu 16.04 LTS ###
+
+We recommend running this with systemd spawner. The default kernel has all the features
+we need, and a recent enough version of systemd to give us all the features.
+
+#### Debian Jessie ####
+
+The systemd version that ships by default with Jessie doesn't provide all the features
+we need, and the default kernel doesn't ship with the features we need. However, if
+you [enable jessie-backports](https://backports.debian.org/Instructions/) you can
+install a new enough version of systemd and linux kernel to get it to work fine.
+
+#### Centos 7 ####
+
+The kernel has all the features we need, but the version of systemd is too old to support
+all the features we need - especially the notebook security related ones. We do not entirely
+support Centos 7 right now, but will provide partial support in the future.
+
 
 ## Installation ##
 
