@@ -116,9 +116,9 @@ install a new enough version of systemd and linux kernel to get it to work fine.
 
 #### Centos 7 ####
 
-The kernel has all the features we need, but the version of systemd (219) is too old to support
-all the features we need - especially the notebook security related ones. Basic spawning,
-memory & cpu limiting will work, however.
+The kernel has all the features we need, but the version of systemd (219) is too old
+for the security related features of systemdspawner. However, basic spawning,
+memory & cpu limiting will work.
 
 
 ## Installation ##
