@@ -186,7 +186,7 @@ class SystemdSpawner(Spawner):
             '/bin/bash',
             '-c',
             "cd {wd} && exec {cmd} {args}".format(
-                wd=self._expand_user_vars(self.user_workingdir),
+                wd=shlex.quote(self._expand_user_vars(self.user_workingdir)),
                 cmd=' '.join([shlex.quote(self._expand_user_vars(c)) for c in self.cmd]),
                 args=' '.join([shlex.quote(a) for a in self.get_args()])
             )
