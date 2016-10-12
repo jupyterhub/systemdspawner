@@ -2,6 +2,7 @@ import os
 import pwd
 import time
 import subprocess
+import shlex
 from traitlets import Bool, Int, Unicode, List
 from tornado import gen
 
@@ -145,10 +146,6 @@ class SystemdSpawner(Spawner):
         for key, value in env.items():
             cmd.append('--setenv={key}={value}'.format(key=key, value=value))
 
-        cmd.append('--property=WorkingDirectory={workingdir}'.format(
-            workingdir=self._expand_user_vars(self.user_workingdir)
-        ))
-
         cmd.append('--setenv=SHELL={shell}'.format(shell=self.default_shell))
 
         if self.mem_limit is not None:
@@ -181,8 +178,20 @@ class SystemdSpawner(Spawner):
                 self._expand_user_vars('--property=ReadWriteDirectories={path}'.format(path=path))
                 for path in self.readwrite_paths
             ])
-        cmd.extend([self._expand_user_vars(c) for c in  self.cmd])
-        cmd.extend(self.get_args())
+
+        # We unfortunately have to resort to doing cd with bash, since WorkingDirectory property
+        # of systemd units can't be set for transient units via systemd-run until systemd v227.
+        # Centos 7 has systemd 219, and will probably never upgrade - so we need to support them.
+        bash_cmd = [
+            '/bin/bash',
+            '-c',
+            "cd {wd} && exec {cmd} {args}".format(
+                wd=self._expand_user_vars(self.user_workingdir),
+                cmd=' '.join([shlex.quote(self._expand_user_vars(c)) for c in self.cmd]),
+                args=' '.join([shlex.quote(a) for a in self.get_args()])
+            )
+        ]
+        cmd.extend(bash_cmd)
 
         self.log.debug('Running systemd-run with: %s' % ' '.join(cmd))
         subprocess.check_output(cmd)
