@@ -123,13 +123,10 @@ support Centos 7 right now, but will provide partial support in the future.
 
 ## Installation ##
 
-There is no package on PyPI yet, so you have to install directly from git.
-Once there is a stable tested version we'll have a version on PyPI.
-
-You can install it right now with:
+You can install it from PyPI with:
 
 ```bash
-pip install git+https://github.com/jupyterhub/systemdspawner.git@master
+pip install jupyterhub-systemdspawner
 ```
 
 You can enable it for your jupyterhub with the following lines in your
