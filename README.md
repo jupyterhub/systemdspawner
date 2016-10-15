@@ -148,6 +148,7 @@ in your `jupyterhub_config.py` file:
 - **[`extra_paths`](#extra_paths)**
 - **[`unit_name_template`](#unit_name_template)**
 - **[`isolate_tmp`](#isolate_tmp)**
+- **[`isolate_devices`](#isolate_devices)**
 - **[`disable_user_sudo`](#disable_user_sudo)**
 - **[`readonly_paths`](#readonly_paths)**
 - **[`readwrite_paths`](#readwrite_paths)**
@@ -264,6 +265,22 @@ this is leaking info.
 
 ```python
 c.SystemdSpawner.isolate_tmp = True
+```
+
+Defaults to false.
+
+This requires systemd version > 227. If you enable this in earlier versions, spawning will
+fail.
+
+### `isolate_devices` ###
+
+Setting this to true provides a separate, private `/dev` for each user. This prevents the
+user from directly accessing hardware devices, which could be a potential source of
+security issues. `/dev/null`, `/dev/zero`, `/dev/random` and the ttyp pseudo-devices will
+be mounted already, so most users should see no change when this is enabled.
+
+```python
+c.SystemdSpawner.isolate_devices = True
 ```
 
 Defaults to false.

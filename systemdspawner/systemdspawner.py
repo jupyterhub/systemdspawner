@@ -50,6 +50,11 @@ class SystemdSpawner(Spawner):
         help='Give each notebook user their own /tmp, isolated from the system & each other'
     ).tag(config=True)
 
+    isolate_devices = Bool(
+        False,
+        help='Give each notebook user their own /dev, with a very limited set of devices mounted'
+    ).tag(config=True)
+
     disable_user_sudo = Bool(
         False,
         help='Set to true to disallow becoming root (or any other user) via sudo or other means from inside the notebook',
@@ -134,6 +139,9 @@ class SystemdSpawner(Spawner):
 
         if self.isolate_tmp:
             cmd.extend(['--property=PrivateTmp=yes'])
+
+        if self.isolate_devices:
+            cmd.extend(['--property=PrivateDevices=yes'])
 
         if self.extra_paths:
             env['PATH'] = '{curpath}:{extrapath}'.format(
