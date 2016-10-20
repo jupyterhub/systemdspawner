@@ -12,7 +12,7 @@ from jupyterhub.utils import random_port
 
 class SystemdSpawner(Spawner):
     mem_limit = Unicode(
-        '90%',
+        None,
         help='Memory limit for each user. Set to `None` for no limits. Uses suffixes that are recognized by Systemd (M, G, etc)',
         allow_none=True,
     ).tag(config=True)
