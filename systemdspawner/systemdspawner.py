@@ -72,21 +72,26 @@ class SystemdSpawner(Spawner):
         help='List of paths that should be marked read-write from the user notebook. Usually used to make a subpath of a readonly path writeable',
     ).tag(config=True)
 
-    # Not configurable, just used internally. Might be exposed if anyone needs it,
-    # but I doubt anyone would.
-    systemctl_cmd = List(
-        ['/usr/bin/sudo', '/bin/systemctl'],
-        help='Path to use to execute the systemctl binary. Should include sudo too.'
+    use_sudo = Bool(
+        False,
+        help="""
+        Use sudo to run systemd-run / systemctl commands.
+
+        Useful if you want to run jupyterhub as a non-root user and have set up sudo rules to allow
+        it to call systemd-run / systemctl commands
+        """
     )
 
-    systemd_run_cmd = List(
-        ['/usr/bin/sudo', '/usr/bin/systemd-run'],
-        help='Path to use to execute the systemd-run binary. Should include sudo too.'
-    )
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # All traitlets configurables are configured by now
+        self.systemctl_cmd = ['/bin/systemctl']
+        self.systemd_run_cmd = ['/usr/bin/systemd-run']
+        if self.use_sudo:
+            self.systemctl_cmd.insert(0, '/usr/bin/sudo')
+            self.systemd_run_cmd.insert(0, '/usr/bin/sudo')
 
-    @property
-    def unit_name(self):
-        return self._expand_user_vars(self.unit_name_template)
+        self.unit_name = self._expand_user_vars(self.unit_name_template)
 
     def _expand_user_vars(self, string):
         """
