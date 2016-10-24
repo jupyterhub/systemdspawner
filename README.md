@@ -152,6 +152,7 @@ in your `jupyterhub_config.py` file:
 - **[`disable_user_sudo`](#disable_user_sudo)**
 - **[`readonly_paths`](#readonly_paths)**
 - **[`readwrite_paths`](#readwrite_paths)**
+- **[`use_sudo`](#use_sudo)**
 
 ### `mem_limit` ###
 
@@ -340,6 +341,24 @@ Defaults to `None` which disables this feature.
 
 This requires systemd version > 228. If you enable this in earlier versions, spawning will
 fail. It can also contain only directories (not files) until systemd version 231.
+
+### `use_sudo` ###
+
+Use sudo to run systemd-run / systemctl commands.
+
+This can be useful if you want to run jupyterhub as a non-root user. However,
+the utility of this is currently limited - you will need to give it pretty
+wide rights, and is not entirely useful. Eventually, we will make this
+more secure by splitting out the actual parts that require root into a
+separate script.
+
+It is still useful, however - things not running as root is always better
+than things running as root :)
+
+```python
+c.SystemdSpawner.use_sudo = False
+```
+Defaults to False.
 
 ## Getting help ##
 
