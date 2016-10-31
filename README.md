@@ -227,7 +227,7 @@ process, or `/bin/bash` if `SHELL` isn't set.
 
 ### `extra_paths` ###
 
-List of paths that should be added to the `PATH` environment variable for the spawned
+List of paths that should be prepended to the `PATH` environment variable for the spawned
 notebook server. This is easier than setting the `env` property, since you want to
 add to PATH, not completely replace it. Very useful when you want to add a virtualenv
 or conda install onto the user's `PATH` by default.

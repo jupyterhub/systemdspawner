@@ -35,7 +35,7 @@ class SystemdSpawner(Spawner):
 
     extra_paths = List(
         [],
-        help='Extra paths to add to the $PATH environment variable. {USERNAME} and {USERID} are expanded',
+        help='Extra paths to prepend to the $PATH environment variable. {USERNAME} and {USERID} are expanded',
     ).tag(config=True)
 
     unit_name_template = Unicode(
@@ -149,7 +149,7 @@ class SystemdSpawner(Spawner):
             cmd.extend(['--property=PrivateDevices=yes'])
 
         if self.extra_paths:
-            env['PATH'] = '{curpath}:{extrapath}'.format(
+            env['PATH'] = '{extrapath}:{curpath}'.format(
                 curpath=env['PATH'],
                 extrapath=':'.join(
                     [self._expand_user_vars(p) for p in self.extra_paths]
