@@ -80,7 +80,7 @@ class SystemdSpawner(Spawner):
         Useful if you want to run jupyterhub as a non-root user and have set up sudo rules to allow
         it to call systemd-run / systemctl commands
         """
-    )
+    ).tag(config=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
