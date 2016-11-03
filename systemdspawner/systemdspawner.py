@@ -93,6 +93,9 @@ class SystemdSpawner(Spawner):
 
         self.unit_name = self._expand_user_vars(self.unit_name_template)
 
+        self.log.debug('user:%s Initialized spawner with unit %s', self.user.name, self.unit_name)
+
+
     def _expand_user_vars(self, string):
         """
         Expand user related variables in a given string
@@ -109,6 +112,7 @@ class SystemdSpawner(Spawner):
     @gen.coroutine
     def start(self):
         self.port = random_port()
+        self.log.debug('user:% Using port %s to start spawning for user %s', self.user.name, self.port)
 
         # if a previous attempt to start the service for this user was made and failed,
         # systemd keeps the service around in 'failed' state. This will prevent future
@@ -124,9 +128,7 @@ class SystemdSpawner(Spawner):
                     'reset-failed',
                     self.unit_name
                 ])
-                self.log.info('Found unit {unit} in failed state, reset state to inactive'.format(
-                    unit=self.unit_name)
-                )
+                self.log.info('user:%s Unit %s in failed state, resetting', self.user.name, self.unit_name)
         except subprocess.CalledProcessError as e:
             # This is returned when the unit is *not* in failed state. bah!
             pass
@@ -206,7 +208,7 @@ class SystemdSpawner(Spawner):
         ]
         cmd.extend(bash_cmd)
 
-        self.log.debug('Running systemd-run with: %s' % ' '.join(cmd))
+        self.log.debug('user:%s Running systemd-run with: %s', self.user.name, ' '.join(cmd))
         subprocess.check_output(cmd)
 
         for i in range(self.start_timeout):
@@ -231,6 +233,8 @@ class SystemdSpawner(Spawner):
                 'is-active',
                 self.unit_name
             ], stdout=open('/dev/null', 'w'), stderr=open('/dev/null', 'w')) == 0:
+                self.log.debug('user:%s unit %s is active', self.user.name, self.unit_name)
                 return None
         except subprocess.CalledProcessError as e:
+            self.log.debug('user:%s unit %s is not active', self.user.name, self.unit_name)
             return e.returncode
