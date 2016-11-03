@@ -215,7 +215,7 @@ class SystemdSpawner(Spawner):
             is_up = yield self.poll()
             if is_up is None:
                 return (self.ip or '127.0.0.1', self.port)
-            time.sleep(1)
+            yield gen.sleep(1)
 
         return None
 
