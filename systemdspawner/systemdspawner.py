@@ -10,6 +10,14 @@ from jupyterhub.spawner import Spawner
 from jupyterhub.utils import random_port
 
 
+# The suffixes that systemd supports
+UNIT_SUFFIXES = {
+    'K': 1024,
+    'G': 1024 * 1024,
+    'T': 1024 * 1024 * 1024,
+}
+
+
 class SystemdSpawner(Spawner):
     mem_limit = Unicode(
         None,
@@ -138,6 +146,26 @@ class SystemdSpawner(Spawner):
         if 'unit_name' in state:
             self.unit_name = state['unit_name']
 
+
+    def _get_limit_envs(self):
+        """
+        Return a dict of memory / CPU limit info for single user notebooks' env
+        """
+        limits = {}
+        if self.mem_limit:
+            if not self.mem_limit.isdigit():
+                mem_limit_num = self.mem_limit[:-1]
+                mem_limit_suffix = self.mem_limit[-1]
+                limits['LIMIT_MEM'] = mem_limit_num * UNIT_SUFFIXES[mem_limit_suffix]
+            else:
+                limits['LIMIT_MEM'] = self.mem_limit
+
+        if self.cpu_limit:
+            # Singleuser notebook expects this to be in the unit of 'virtual CPU cores'
+            # Systemd expects this to be in % of virtual CPU cores.
+            limits['CPU_LIMIT'] = self.cpu_limit / 100
+
+
     @gen.coroutine
     def start(self):
         self.port = random_port()
@@ -162,6 +190,7 @@ class SystemdSpawner(Spawner):
             # This is returned when the unit is *not* in failed state. bah!
             pass
         env = self.get_env()
+        env.update(self._get_limit_envs())
 
         cmd = self.systemd_run_cmd[:]
 
