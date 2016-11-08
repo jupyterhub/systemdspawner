@@ -10,8 +10,8 @@ from jupyterhub.spawner import Spawner
 from jupyterhub.utils import random_port
 
 
-# The suffixes that systemd supports
-UNIT_SUFFIXES = {
+# The memory suffixes that systemd supports
+MEMORY_UNIT_SUFFIXES = {
     'K': 1024,
     'G': 1024 * 1024,
     'T': 1024 * 1024 * 1024,
@@ -152,19 +152,21 @@ class SystemdSpawner(Spawner):
         Return a dict of memory / CPU limit info for single user notebooks' env
         """
         limits = {}
+        # Expose memory and CPU limits to the single user notebook
+        # Environment variable values must be strings.
         if self.mem_limit:
             if not self.mem_limit.isdigit():
-                mem_limit_num = self.mem_limit[:-1]
-                mem_limit_suffix = self.mem_limit[-1]
-                limits['LIMIT_MEM'] = mem_limit_num * UNIT_SUFFIXES[mem_limit_suffix]
+                # Memory must be reported in byte integers
+                mem_limit_num = float(self.mem_limit[:-1])
+                mem_limit_suffix = self.mem_limit[-1:]
+                limits['LIMIT_MEM'] = str(int(mem_limit_num * MEMORY_UNIT_SUFFIXES[mem_limit_suffix]))
             else:
-                limits['LIMIT_MEM'] = self.mem_limit
+                limits['LIMIT_MEM'] = str(self.mem_limit)
 
         if self.cpu_limit:
             # Singleuser notebook expects this to be in the unit of 'virtual CPU cores'
             # Systemd expects this to be in % of virtual CPU cores.
-            limits['LIMIT_CPU'] = self.cpu_limit / 100
-
+            limits['LIMIT_CPU'] = str(self.cpu_limit / 100)
 
     @gen.coroutine
     def start(self):
