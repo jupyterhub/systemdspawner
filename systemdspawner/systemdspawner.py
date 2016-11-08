@@ -163,7 +163,7 @@ class SystemdSpawner(Spawner):
         if self.cpu_limit:
             # Singleuser notebook expects this to be in the unit of 'virtual CPU cores'
             # Systemd expects this to be in % of virtual CPU cores.
-            limits['CPU_LIMIT'] = self.cpu_limit / 100
+            limits['LIMIT_CPU'] = self.cpu_limit / 100
 
 
     @gen.coroutine
