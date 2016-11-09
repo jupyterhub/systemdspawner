@@ -169,19 +169,22 @@ user from being able to single handedly take down the machine accidentally by OO
 c.SystemdSpawner.mem_limit = '4G'
 ```
 
-Defaults to `None`.
+Defaults to `None`, which provides no memory limits.
+
+This info is exposed to the single-user server as the environment variable `LIMIT_MEM` as integer bytes.
 
 ### `cpu_limit` ###
 
-An integer representing the total CPU each user can use. `100` represents one full
-CPU, `400` represents 4 full CPUs, `50` represents half of one CPU, etc. This is
-the same metric you see in the `top` tool.
+An float representing the total CPU-cores each user can use. `1` represents one full
+CPU, `4` represents 4 full CPUs, `0.5` represents half of one CPU, etc.
 
 ```python
-c.SystemdSpawner.cpu_limit = 4
+c.SystemdSpawner.cpu_limit = 4.0
 ```
 
 Defaults to `None`, which provides no CPU limits.
+
+This info is exposed to the single-user server as the environment variable `LIMIT_CPU` as a float.
 
 #### CPU fairness ####
 

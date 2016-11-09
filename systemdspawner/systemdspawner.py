@@ -19,18 +19,6 @@ MEMORY_UNIT_SUFFIXES = {
 
 
 class SystemdSpawner(Spawner):
-    mem_limit = Unicode(
-        None,
-        help='Memory limit for each user. Set to `None` for no limits. Uses suffixes that are recognized by Systemd (M, G, etc)',
-        allow_none=True,
-    ).tag(config=True)
-
-    cpu_limit = Int(
-        None,
-        help='CPU limit for each user. 100 means 1 full CPU, 30 is 30% of 1 CPU, 200 is 2 CPUs, etc. Set to `None` (default) for no limits',
-        allow_none=True,
-    ).tag(config=True)
-
     user_workingdir = Unicode(
         '/home/{USERNAME}',
         help='Path to start each notebook user on. {USERNAME} and {USERID} are expanded'
@@ -146,28 +134,6 @@ class SystemdSpawner(Spawner):
         if 'unit_name' in state:
             self.unit_name = state['unit_name']
 
-
-    def _get_limit_envs(self):
-        """
-        Return a dict of memory / CPU limit info for single user notebooks' env
-        """
-        limits = {}
-        # Expose memory and CPU limits to the single user notebook
-        # Environment variable values must be strings.
-        if self.mem_limit:
-            if not self.mem_limit.isdigit():
-                # Memory must be reported in byte integers
-                mem_limit_num = float(self.mem_limit[:-1])
-                mem_limit_suffix = self.mem_limit[-1:]
-                limits['LIMIT_MEM'] = str(int(mem_limit_num * MEMORY_UNIT_SUFFIXES[mem_limit_suffix]))
-            else:
-                limits['LIMIT_MEM'] = str(self.mem_limit)
-
-        if self.cpu_limit:
-            # Singleuser notebook expects this to be in the unit of 'virtual CPU cores'
-            # Systemd expects this to be in % of virtual CPU cores.
-            limits['LIMIT_CPU'] = str(self.cpu_limit / 100)
-
     @gen.coroutine
     def start(self):
         self.port = random_port()
@@ -192,7 +158,6 @@ class SystemdSpawner(Spawner):
             # This is returned when the unit is *not* in failed state. bah!
             pass
         env = self.get_env()
-        env.update(self._get_limit_envs())
 
         cmd = self.systemd_run_cmd[:]
 
@@ -236,7 +201,7 @@ class SystemdSpawner(Spawner):
             #        otherwise this doesn't have any effect.
             cmd.extend([
                 '--property=CPUAccounting=yes',
-                '--property=CPUQuota={quota}%'.format(quota=self.cpu_limit)
+                '--property=CPUQuota={quota}%'.format(quota=self.cpu_limit * 100)
             ])
 
         if self.disable_user_sudo:
