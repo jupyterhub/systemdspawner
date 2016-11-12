@@ -171,7 +171,8 @@ c.SystemdSpawner.mem_limit = '4G'
 
 Defaults to `None`, which provides no memory limits.
 
-This info is exposed to the single-user server as the environment variable `LIMIT_MEM` as integer bytes.
+This info is exposed to the single-user server as the environment variable
+`MEM_LIMIT` as integer bytes.
 
 ### `cpu_limit` ###
 
@@ -184,7 +185,8 @@ c.SystemdSpawner.cpu_limit = 4.0
 
 Defaults to `None`, which provides no CPU limits.
 
-This info is exposed to the single-user server as the environment variable `LIMIT_CPU` as a float.
+This info is exposed to the single-user server as the environment variable
+`CPU_LIMIT` as a float.
 
 #### CPU fairness ####
 

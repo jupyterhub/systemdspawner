@@ -10,14 +10,6 @@ from jupyterhub.spawner import Spawner
 from jupyterhub.utils import random_port
 
 
-# The memory suffixes that systemd supports
-MEMORY_UNIT_SUFFIXES = {
-    'K': 1024,
-    'G': 1024 * 1024,
-    'T': 1024 * 1024 * 1024,
-}
-
-
 class SystemdSpawner(Spawner):
     user_workingdir = Unicode(
         '/home/{USERNAME}',
