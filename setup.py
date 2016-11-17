@@ -10,5 +10,5 @@ setup(
     author_email='yuvipanda@gmail.com',
     license='3 Clause BSD',
     packages=['systemdspawner'],
-    install_requires=['jupyterhub'],
+    install_requires=['jupyterhub>=0.7'],
 )

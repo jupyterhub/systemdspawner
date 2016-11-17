@@ -11,18 +11,6 @@ from jupyterhub.utils import random_port
 
 
 class SystemdSpawner(Spawner):
-    mem_limit = Unicode(
-        None,
-        help='Memory limit for each user. Set to `None` for no limits. Uses suffixes that are recognized by Systemd (M, G, etc)',
-        allow_none=True,
-    ).tag(config=True)
-
-    cpu_limit = Int(
-        None,
-        help='CPU limit for each user. 100 means 1 full CPU, 30 is 30% of 1 CPU, 200 is 2 CPUs, etc. Set to `None` (default) for no limits',
-        allow_none=True,
-    ).tag(config=True)
-
     user_workingdir = Unicode(
         '/home/{USERNAME}',
         help='Path to start each notebook user on. {USERNAME} and {USERID} are expanded'
@@ -205,7 +193,7 @@ class SystemdSpawner(Spawner):
             #        otherwise this doesn't have any effect.
             cmd.extend([
                 '--property=CPUAccounting=yes',
-                '--property=CPUQuota={quota}%'.format(quota=self.cpu_limit)
+                '--property=CPUQuota={quota}%'.format(quota=self.cpu_limit * 100)
             ])
 
         if self.disable_user_sudo:
