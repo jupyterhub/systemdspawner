@@ -237,7 +237,7 @@ class SystemdSpawner(Spawner):
         return None
 
     @gen.coroutine
-    def stop(self):
+    def stop(self, now=False):
         subprocess.check_output(self.systemctl_cmd + [
             'stop',
             self.unit_name
