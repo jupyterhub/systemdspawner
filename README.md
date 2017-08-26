@@ -195,7 +195,7 @@ user should have equal access to all the CPUs in the absense of limits. This
 does not entirely work in the normal case for Jupyter Notebooks, since CPU
 scheduling happens on a per-process level, rather than per-user. This means
 a user running 100 processes has 100x more access to the CPU than a user running
-1. This is far from an ideal situation.
+one. This is far from an ideal situation.
 
 Since each user's notebook server runs in its own Systemd Service, this problem
 is mitigated - all the processes spawned from a user's notebook server are run
