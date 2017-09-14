@@ -193,7 +193,7 @@ class SystemdSpawner(Spawner):
             #        otherwise this doesn't have any effect.
             cmd.extend([
                 '--property=CPUAccounting=yes',
-                '--property=CPUQuota={quota}%'.format(quota=self.cpu_limit * 100)
+                '--property=CPUQuota={quota}%'.format(quota=int(self.cpu_limit * 100))
             ])
 
         if self.disable_user_sudo:

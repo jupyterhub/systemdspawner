@@ -176,8 +176,11 @@ This info is exposed to the single-user server as the environment variable
 
 ### `cpu_limit` ###
 
-An float representing the total CPU-cores each user can use. `1` represents one full
-CPU, `4` represents 4 full CPUs, `0.5` represents half of one CPU, etc.
+A float representing the total CPU-cores each user can use. `1` represents one
+full CPU, `4` represents 4 full CPUs, `0.5` represents half of one CPU, etc.
+This value is ultimately converted to a percentage and rounded down to the
+nearest integer percentage, i.e. `1.5` is converted to 150%, `0.125` is
+converted to 12%, etc.
 
 ```python
 c.SystemdSpawner.cpu_limit = 4.0
@@ -187,6 +190,10 @@ Defaults to `None`, which provides no CPU limits.
 
 This info is exposed to the single-user server as the environment variable
 `CPU_LIMIT` as a float.
+
+Note: there is [a bug](https://github.com/systemd/systemd/issues/3851) in
+systemd v231 which prevents the CPU limit from being set to a value greater
+than 100%.
 
 #### CPU fairness ####
 
