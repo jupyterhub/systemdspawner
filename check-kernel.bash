@@ -22,14 +22,14 @@ if [ ! -e "$CONFIG" ]; then
 fi
 
 # Check if memory cgroups are enabled
-if grep -q 'CONFIG_MEMCG=y' "$CONFIG"; then
+if zgrep -q 'CONFIG_MEMCG=y' "$CONFIG"; then
     echo "Memory Limiting: Enabled"
 else
     echo "Memory Limiting: Disabled"
 fi
 
 # Check if cfs scheduling is enabled
-if grep -q 'CONFIG_FAIR_GROUP_SCHED=y' "$CONFIG"; then
+if zgrep -q 'CONFIG_FAIR_GROUP_SCHED=y' "$CONFIG"; then
     echo "CPU Limiting: Enabled"
 else
     echo "CPU Limiting: Disabled"
