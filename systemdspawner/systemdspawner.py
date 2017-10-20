@@ -3,7 +3,7 @@ import pwd
 import time
 import subprocess
 import shlex
-from traitlets import Bool, Int, Unicode, List
+from traitlets import Bool, Int, Unicode, List, Dict, Set
 from tornado import gen
 
 from jupyterhub.spawner import Spawner
@@ -68,6 +68,21 @@ class SystemdSpawner(Spawner):
         Useful if you want to run jupyterhub as a non-root user and have set up sudo rules to allow
         it to call systemd-run / systemctl commands
         """
+    ).tag(config=True)
+
+    users_without_quotas = Set(
+        None,
+        allow_none=True,
+        help='''
+            Set of users that will have unlimited mem_limit and cpu_limit, it will overwrite special_user_quotas even if
+            it's set for the user.
+        '''
+    ).tag(config=True)
+
+    special_user_quotas = Dict(
+        None,
+        allow_none=True,
+        help='Dict with users as key and cpu_limit/mem_limit as value. It will overwrite mem_limit/cpu_limit.'
     ).tag(config=True)
 
     def __init__(self, *args, **kwargs):
@@ -179,6 +194,17 @@ class SystemdSpawner(Spawner):
             cmd.append('--setenv={key}={value}'.format(key=key, value=value))
 
         cmd.append('--setenv=SHELL={shell}'.format(shell=self.default_shell))
+
+        if self.users_without_quotas and self.user.name in self.users_without_quotas:
+            # If users_without_quotas is set for the user, it will overwrite mem_limit and cpu_limit
+            self.mem_limit = None
+            self.cpu_limit = None
+        elif self.special_user_quotas and self.user.name in self.special_user_quotas:
+            # If the user has a specific value for mem_limit or cpu_limit, it will overwrite the default value
+            if 'mem_limit' in self.special_user_quotas[self.user.name]:
+                self.mem_limit = self.special_user_quotas[self.user.name]['mem_limit']
+            if 'cpu_limit' in self.special_user_quotas[self.user.name]:
+                self.cpu_limit = self.special_user_quotas[self.user.name]['cpu_limit']
 
         if self.mem_limit is not None:
             # FIXME: Detect & use proper properties for v1 vs v2 cgroups
