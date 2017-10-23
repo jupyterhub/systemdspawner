@@ -97,7 +97,6 @@ class SystemdSpawner(Spawner):
 
         self.log.debug('user:%s Initialized spawner with unit %s', self.user.name, self.unit_name)
 
-
     def _expand_user_vars(self, string):
         """
         Expand user related variables in a given string
