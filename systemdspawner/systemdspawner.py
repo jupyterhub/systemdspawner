@@ -1,9 +1,8 @@
 import os
 import pwd
-import time
 import subprocess
 import shlex
-from traitlets import Bool, Int, Unicode, List, Dict, Set
+from traitlets import Bool, Unicode, List, Dict, Set
 from tornado import gen
 
 from jupyterhub.spawner import Spawner
