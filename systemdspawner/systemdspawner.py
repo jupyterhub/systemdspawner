@@ -129,7 +129,7 @@ class SystemdSpawner(Spawner):
     @gen.coroutine
     def start(self):
         self.port = random_port()
-        self.log.debug('user:% Using port %s to start spawning for user %s', self.user.name, self.port)
+        self.log.debug('user:%s Using port %s to start spawning user server', self.user.name, self.port)
 
         # if a previous attempt to start the service for this user was made and failed,
         # systemd keeps the service around in 'failed' state. This will prevent future
