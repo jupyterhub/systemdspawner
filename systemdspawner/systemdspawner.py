@@ -12,9 +12,7 @@ from jupyterhub.utils import random_port
 
 class SystemdSpawner(Spawner):
     user_workingdir = Unicode(
-        '/home/{USERNAME}',
-        help='Path to start each notebook user on. {USERNAME} and {USERID} are expanded'
-    ).tag(config=True)
+        '/home/{USERNAME}', help='Path to start each notebook user on. {USERNAME} and {USERID} are expanded. {USERHOME} is expanded as user home directory as declared on the system.').tag(config=True)
 
     default_shell = Unicode(
         os.environ.get('SHELL', '/bin/bash'),
@@ -23,12 +21,12 @@ class SystemdSpawner(Spawner):
 
     extra_paths = List(
         [],
-        help='Extra paths to prepend to the $PATH environment variable. {USERNAME} and {USERID} are expanded',
+        help='Extra paths to prepend to the $PATH environment variable. {USERHOME}, {USERNAME} and {USERID} are expanded',
     ).tag(config=True)
 
     unit_name_template = Unicode(
         'jupyter-{USERNAME}-singleuser',
-        help='Template to use to make the systemd service names. {USERNAME} and {USERID} are expanded}'
+        help='Template to use to make the systemd service names. {USERHOME}, {USERNAME} and {USERID} are expanded}'
     ).tag(config=True)
 
     # FIXME: Do not allow enabling this for systemd versions < 227,
@@ -89,12 +87,15 @@ class SystemdSpawner(Spawner):
         Expand user related variables in a given string
 
         Currently expands:
+          {USERHOME} -> User home directory
           {USERNAME} -> Name of the user
           {USERID} -> UserID
         """
+        import os.path
         return string.format(
             USERNAME=self.user.name,
-            USERID=self.user.id
+            USERID=self.user.id,
+            USERHOME=os.path.expanduser('~{}'.format(self.user.name)),
         )
 
     def get_state(self):
