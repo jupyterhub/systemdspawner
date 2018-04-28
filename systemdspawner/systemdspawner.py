@@ -95,7 +95,7 @@ class SystemdSpawner(Spawner):
         return string.format(
             USERNAME=self.user.name,
             USERID=self.user.id,
-            USERHOME=os.path.expanduser('~{}'.format(self.user.name)),
+            USERHOME=os.path.expanduser('~{}'.format(self.user.name))
         )
 
     def get_state(self):
