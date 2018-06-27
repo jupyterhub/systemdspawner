@@ -13,7 +13,13 @@ from jupyterhub.utils import random_port
 class SystemdSpawner(Spawner):
     user_workingdir = Unicode(
         '/home/{USERNAME}',
-        help='Path to start each notebook user on. {USERNAME} and {USERID} are expanded'
+        help="""
+        Path to start each notebook user on.
+
+        {USERNAME} and {USERID} are expanded.
+
+        Not respected if dynamic_users is set to True.
+        """
     ).tag(config=True)
 
     default_shell = Unicode(
@@ -77,6 +83,22 @@ class SystemdSpawner(Spawner):
 
         Useful if you want to run jupyterhub as a non-root user and have set up sudo rules to allow
         it to call systemd-run / systemctl commands
+        """
+    ).tag(config=True)
+
+    dynamic_users = Bool(
+        False,
+        help="""
+        Allocate system users dynamically for each user.
+
+        Uses the DynamicUser= feature of Systemd to make a new system user
+        for each hub user dynamically. Their home directories are set up
+        under /var/lib/{USERNAME}, and persist over time.
+
+        See http://0pointer.net/blog/dynamic-users-with-systemd.html for more
+        information.
+
+        Requires systemd 235.
         """
     ).tag(config=True)
 
@@ -164,12 +186,22 @@ class SystemdSpawner(Spawner):
         cmd = self.systemd_run_cmd[:]
 
         cmd.extend(['--unit', self.unit_name])
-        try:
-            pwnam = pwd.getpwnam(self.user.name)
-        except KeyError:
-            self.log.exception('No user named %s found in the system' % self.user.name)
-            raise
-        cmd.extend(['--uid', str(pwnam.pw_uid), '--gid', str(pwnam.pw_gid)])
+        if self.dynamic_users:
+            cmd.extend([
+                '--property=DynamicUser=yes',
+                self._expand_user_vars('--property=StateDirectory={USERNAME}')
+            ])
+            # HOME is not set by default otherwise
+            env['HOME'] = self._expand_user_vars('/var/lib/{USERNAME}')
+            # Set working directory to $HOME too
+            self.user_workingdir = env['HOME']
+        else:
+            try:
+                pwnam = pwd.getpwnam(self.user.name)
+            except KeyError:
+                self.log.exception('No user named %s found in the system' % self.user.name)
+                raise
+            cmd.extend(['--uid', str(pwnam.pw_uid), '--gid', str(pwnam.pw_gid)])
 
         if self.isolate_tmp:
             cmd.extend(['--property=PrivateTmp=yes'])
