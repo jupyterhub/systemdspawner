@@ -217,7 +217,7 @@ when other users want to use the CPU.
 The directory to spawn each user's notebook server in. This directory is what users
 see when they open their notebooks servers. Usually this is the user's home directory.
 
-`{USERNAME}` and `{USERID}` in this configuration value will be expanded to the
+`{USERHOME}`, `{USERNAME}` and `{USERID}` in this configuration value will be expanded to the
 appropriate values for the user being spawned.
 
 ```python
@@ -248,7 +248,7 @@ or conda install onto the user's `PATH` by default.
 c.SystemdSpawner.extra_paths = ['/home/{USERNAME}/conda/bin']
 ```
 
-`{USERNAME}` and `{USERID}` in this configuration value will be expanded to the
+`{USERHOME}`, `{USERNAME}` and `{USERID}` in this configuration value will be expanded to the
 appropriate values for the user being spawned.
 
 Defaults to `[]` which doesn't add any extra paths to `PATH`
@@ -263,7 +263,7 @@ machine. Should contain only [a-zA-Z0-9_-].
 c.SystemdSpawner.unit_name_template = 'jupyter-{USERNAME}-singleuser'
 ```
 
-`{USERNAME}` and `{USERID}` in this configuration value will be expanded to the
+`{USERHOME}`, `{USERNAME}` and `{USERID}` in this configuration value will be expanded to the
 appropriate values for the user being spawned.
 
 Defaults to `jupyter-{USERNAME}-singleuser`
@@ -327,7 +327,7 @@ readonly & only whitelisting the paths where notebook users can write.
 c.SystemdSpawner.readonly_paths = ['/']
 ```
 
-`{USERNAME}` and `{USERID}` in this configuration value will be expanded to the
+`{USERHOME}`, `{USERNAME}` and `{USERID}` in this configuration value will be expanded to the
 appropriate values for the user being spawned.
 
 Defaults to `None` which disables this feature.
@@ -346,7 +346,7 @@ user needs to have appropriate rights to write to these paths.
 c.SystemdSpawner.readwrite_paths = ['/home/{USERNAME}']
 ```
 
-`{USERNAME}` and `{USERID}` in this configuration value will be expanded to the
+`{USERHOME}`, `{USERNAME}` and `{USERID}` in this configuration value will be expanded to the
 appropriate values for the user being spawned.
 
 Defaults to `None` which disables this feature.
