@@ -60,6 +60,16 @@ class SystemdSpawner(Spawner):
         help='List of paths that should be marked read-write from the user notebook. Usually used to make a subpath of a readonly path writeable',
     ).tag(config=True)
 
+    unit_extra_properties = List(
+        None,
+        allow_none=True,
+        help="""
+        List of extra properties for systemd-run --property=[...].
+        Used to add arbitrary properties for spawned Jupyter units.
+        Read `man systemd-run` for details on per-unit properties.
+        """
+    ).tag(config=True)
+
     use_sudo = Bool(
         False,
         help="""
@@ -209,6 +219,12 @@ class SystemdSpawner(Spawner):
             cmd.extend([
                 self._expand_user_vars('--property=ReadWriteDirectories={path}'.format(path=path))
                 for path in self.readwrite_paths
+            ])
+
+        if self.unit_extra_properties is not None:
+            cmd.extend([
+                self._expand_user_vars('--property={prop}'.format(prop=prop))
+                for prop in self.unit_extra_properties
             ])
 
         # We unfortunately have to resort to doing cd with bash, since WorkingDirectory property
