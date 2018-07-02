@@ -181,6 +181,32 @@ class SystemdSpawner(Spawner):
         except subprocess.CalledProcessError as e:
             # This is returned when the unit is *not* in failed state. bah!
             pass
+
+        # If there's a unit with this name running already. This means a bug in
+        # JupyterHub, or a remnant from a previous install of JupyterHub.
+        # Regardless, we kill it and start ours in its place.
+        # FIXME: Carefully look at this when doing a security sweep.
+        already_active = False
+        try:
+            if subprocess.check_output(self.systemctl_cmd + [
+                'is-active',
+                self.unit_name
+            ]).decode('utf-8').strip() == 'active':
+                already_active = True
+        except subprocess.CalledProcessError as e:
+            # If unit is not already active we get this exception. Can ignore.
+            pass
+
+        if already_active:
+            # If the unit *is* already active, we must stop it.
+            # Exception here should just bubble up.
+            subprocess.check_output(self.systemctl_cmd + [
+                'stop',
+                self.unit_name
+            ])
+            self.log.info('user:%s Unit %s already exists but not known to JupyterHub. Killing', self.user.name, self.unit_name)
+
+
         env = self.get_env()
 
         cmd = self.systemd_run_cmd[:]
