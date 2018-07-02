@@ -111,7 +111,8 @@ class SystemdSpawner(Spawner):
 
         Uses the DynamicUser= feature of Systemd to make a new system user
         for each hub user dynamically. Their home directories are set up
-        under /var/lib/{USERNAME}, and persist over time.
+        under /var/lib/{USERNAME}, and persist over time. The system user
+        is deallocated whenever the user's server is not running.
 
         See http://0pointer.net/blog/dynamic-users-with-systemd.html for more
         information.
