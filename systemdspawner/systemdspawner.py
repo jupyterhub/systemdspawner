@@ -1,9 +1,8 @@
 import os
 import pwd
-import time
 import subprocess
 import shlex
-from traitlets import Bool, Int, Unicode, List
+from traitlets import Bool, Unicode, List
 from tornado import gen
 
 from jupyterhub.spawner import Spawner
@@ -29,41 +28,63 @@ class SystemdSpawner(Spawner):
 
     extra_paths = List(
         [],
-        help='Extra paths to prepend to the $PATH environment variable. {USERNAME} and {USERID} are expanded',
+        help="""
+        Extra paths to prepend to the $PATH environment variable.
+
+        {USERNAME} and {USERID} are expanded
+        """,
     ).tag(config=True)
 
     unit_name_template = Unicode(
         'jupyter-{USERNAME}-singleuser',
-        help='Template to use to make the systemd service names. {USERNAME} and {USERID} are expanded}'
+        help="""
+        Template to use to make the systemd service names.
+
+        {USERNAME} and {USERID} are expanded}
+        """
     ).tag(config=True)
 
     # FIXME: Do not allow enabling this for systemd versions < 227,
     # since that is when it was introduced.
     isolate_tmp = Bool(
         False,
-        help='Give each notebook user their own /tmp, isolated from the system & each other'
+        help="""
+        Give each notebook user their own /tmp, isolated from the system & each other
+        """
     ).tag(config=True)
 
     isolate_devices = Bool(
         False,
-        help='Give each notebook user their own /dev, with a very limited set of devices mounted'
+        help="""
+        Give each notebook user their own /dev, with a very limited set of devices mounted
+        """
     ).tag(config=True)
 
     disable_user_sudo = Bool(
         False,
-        help='Set to true to disallow becoming root (or any other user) via sudo or other means from inside the notebook',
+        help="""
+        Set to true to disallow becoming root (or any other user) via sudo or other means from inside the notebook
+        """,
     ).tag(config=True)
 
     readonly_paths = List(
         None,
         allow_none=True,
-        help='List of paths that should be marked readonly from the user notebook. Subpaths can be overriden by setting readwrite_paths',
+        help="""
+        List of paths that should be marked readonly from the user notebook.
+
+        Subpaths maybe be made writeable by setting readwrite_paths
+        """,
     ).tag(config=True)
 
     readwrite_paths = List(
         None,
         allow_none=True,
-        help='List of paths that should be marked read-write from the user notebook. Usually used to make a subpath of a readonly path writeable',
+        help="""
+        List of paths that should be marked read-write from the user notebook.
+
+        Used to make a subpath of a readonly path writeable
+        """,
     ).tag(config=True)
 
     unit_extra_properties = List(
@@ -71,6 +92,7 @@ class SystemdSpawner(Spawner):
         allow_none=True,
         help="""
         List of extra properties for systemd-run --property=[...].
+
         Used to add arbitrary properties for spawned Jupyter units.
         Read `man systemd-run` for details on per-unit properties.
         """
@@ -81,8 +103,9 @@ class SystemdSpawner(Spawner):
         help="""
         Use sudo to run systemd-run / systemctl commands.
 
-        Useful if you want to run jupyterhub as a non-root user and have set up sudo rules to allow
-        it to call systemd-run / systemctl commands
+        Partially useful when running JupyterHub as a non-root user but with
+        full sudo control. Partially protects against a large class of attacks
+        (except full Remote Code Execution in JupyterHub).
         """
     ).tag(config=True)
 
@@ -115,7 +138,6 @@ class SystemdSpawner(Spawner):
 
         self.log.debug('user:%s Initialized spawner with unit %s', self.user.name, self.unit_name)
 
-
     def _expand_user_vars(self, string):
         """
         Expand user related variables in a given string
@@ -146,7 +168,7 @@ class SystemdSpawner(Spawner):
 
     def load_state(self, state):
         """
-        Load state from storage required to reinstate this user's pod
+        Load state from storage required to reinstate this user's server
 
         This runs after __init__, so we can override it with saved unit name
         if needed. This is useful primarily when you change the unit name template
@@ -193,7 +215,7 @@ class SystemdSpawner(Spawner):
                 self.unit_name
             ]).decode('utf-8').strip() == 'active':
                 already_active = True
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             # If unit is not already active we get this exception. Can ignore.
             pass
 
@@ -205,7 +227,6 @@ class SystemdSpawner(Spawner):
                 self.unit_name
             ])
             self.log.info('user:%s Unit %s already exists but not known to JupyterHub. Killing', self.user.name, self.unit_name)
-
 
         env = self.get_env()
 
