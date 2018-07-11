@@ -67,6 +67,9 @@ The following features are currently available:
 9. Automatically collect logs from each individual user notebook into
    `journald`, which also handles log rotation.
 
+10. Dynamically allocate users with Systemd's [dynamic users](http://0pointer.net/blog/dynamic-users-with-systemd.html)
+    facility. Very useful in conjunction with [tmpauthenticator](https://github.com/jupyterhub/tmpauthenticator).
+
 ## Requirements ##
 
 ### Systemd ###
@@ -96,9 +99,15 @@ will explore hardening approaches soon.
 
 ### Local Users ###
 
-Each user's server is spawned to run as a local unix user account. Hence this spawner
+If running with `c.SystemdSpawner.dynamic_users = False` (the default), each user's
+server is spawned to run as a local unix user account. Hence this spawner
 requires that all users who authenticate have a local account already present on the
 machine.
+
+If running with `c.SystemdSpawner.dynamic_users = True`, no local user accounts
+are required. Systemd will automatically create dynamic users as required.
+See [this blog post](http://0pointer.net/blog/dynamic-users-with-systemd.html) for
+details.
 
 ### Linux Distro compatibility ##
 
@@ -152,7 +161,7 @@ in your `jupyterhub_config.py` file:
 - **[`disable_user_sudo`](#disable_user_sudo)**
 - **[`readonly_paths`](#readonly_paths)**
 - **[`readwrite_paths`](#readwrite_paths)**
-- **[`use_sudo`](#use_sudo)**
+- **[`dynamic_users`](#dynamic_users)**
 
 ### `mem_limit` ###
 
@@ -321,7 +330,8 @@ fail.
 List of filesystem paths that should be mounted readonly for the users' notebook server. This
 will override any filesystem permissions that might exist. Subpaths of paths that are mounted
 readonly can be marked readwrite with `readwrite_paths`. This is useful for marking `/` as
-readonly & only whitelisting the paths where notebook users can write.
+readonly & only whitelisting the paths where notebook users can write. If paths listed here
+do not exist, you will get an error.
 
 ```python
 c.SystemdSpawner.readonly_paths = ['/']
@@ -354,23 +364,19 @@ Defaults to `None` which disables this feature.
 This requires systemd version > 228. If you enable this in earlier versions, spawning will
 fail. It can also contain only directories (not files) until systemd version 231.
 
-### `use_sudo` ###
+### `dynamic_users` ###
 
-Use sudo to run systemd-run / systemctl commands.
+Allocate system users dynamically for each user.
 
-This can be useful if you want to run jupyterhub as a non-root user. However,
-the utility of this is currently limited - you will need to give it pretty
-wide rights, and is not entirely useful. Eventually, we will make this
-more secure by splitting out the actual parts that require root into a
-separate script.
+Uses the DynamicUser= feature of Systemd to make a new system user
+for each hub user dynamically. Their home directories are set up
+under /var/lib/{USERNAME}, and persist over time. The system user
+is deallocated whenever the user's server is not running.
 
-It is still useful, however - things not running as root is always better
-than things running as root :)
+See http://0pointer.net/blog/dynamic-users-with-systemd.html for more
+information.
 
-```python
-c.SystemdSpawner.use_sudo = False
-```
-Defaults to False.
+Requires systemd 235.
 
 ## Getting help ##
 

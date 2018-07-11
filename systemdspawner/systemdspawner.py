@@ -1,9 +1,10 @@
 import os
 import pwd
 import subprocess
-import shlex
-from traitlets import Bool, Unicode, List
-from tornado import gen
+from traitlets import Bool, Unicode, List, Dict
+import asyncio
+
+from systemdspawner import systemd
 
 from jupyterhub.spawner import Spawner
 from jupyterhub.utils import random_port
@@ -87,25 +88,19 @@ class SystemdSpawner(Spawner):
         """,
     ).tag(config=True)
 
-    unit_extra_properties = List(
-        None,
-        allow_none=True,
+    unit_extra_properties = Dict(
+        {},
         help="""
-        List of extra properties for systemd-run --property=[...].
+        Dict of extra properties for systemd-run --property=[...].
+
+        Keys are property names, and values are either strings or
+        list of strings (for multiple entries). When values are
+        lists, ordering is guaranteed. Ordering across keys of the
+        dictionary are *not* guaranteed.
 
         Used to add arbitrary properties for spawned Jupyter units.
-        Read `man systemd-run` for details on per-unit properties.
-        """
-    ).tag(config=True)
-
-    use_sudo = Bool(
-        False,
-        help="""
-        Use sudo to run systemd-run / systemctl commands.
-
-        Partially useful when running JupyterHub as a non-root user but with
-        full sudo control. Partially protects against a large class of attacks
-        (except full Remote Code Execution in JupyterHub).
+        Read `man systemd-run` for details on per-unit properties
+        available in transient units.
         """
     ).tag(config=True)
 
@@ -116,7 +111,8 @@ class SystemdSpawner(Spawner):
 
         Uses the DynamicUser= feature of Systemd to make a new system user
         for each hub user dynamically. Their home directories are set up
-        under /var/lib/{USERNAME}, and persist over time.
+        under /var/lib/{USERNAME}, and persist over time. The system user
+        is deallocated whenever the user's server is not running.
 
         See http://0pointer.net/blog/dynamic-users-with-systemd.html for more
         information.
@@ -128,12 +124,6 @@ class SystemdSpawner(Spawner):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # All traitlets configurables are configured by now
-        self.systemctl_cmd = ['/bin/systemctl']
-        self.systemd_run_cmd = ['/usr/bin/systemd-run']
-        if self.use_sudo:
-            self.systemctl_cmd.insert(0, '/usr/bin/sudo')
-            self.systemd_run_cmd.insert(0, '/usr/bin/sudo')
-
         self.unit_name = self._expand_user_vars(self.unit_name_template)
 
         self.log.debug('user:%s Initialized spawner with unit %s', self.user.name, self.unit_name)
@@ -180,81 +170,49 @@ class SystemdSpawner(Spawner):
         if 'unit_name' in state:
             self.unit_name = state['unit_name']
 
-    @gen.coroutine
-    def start(self):
+    async def start(self):
         self.port = random_port()
         self.log.debug('user:%s Using port %s to start spawning user server', self.user.name, self.port)
 
-        # if a previous attempt to start the service for this user was made and failed,
-        # systemd keeps the service around in 'failed' state. This will prevent future
-        # services with the same name from being started. While this behavior makes sense
-        # (since if it fails & is deleted immediately, we will lose state info), in our
-        # case it is ok to reset it and move on when trying to start again.
-        try:
-            if subprocess.check_output(self.systemctl_cmd + [
-                'is-failed',
-                self.unit_name
-            ]).decode('utf-8').strip() == 'failed':
-                subprocess.check_output(self.systemctl_cmd + [
-                    'reset-failed',
-                    self.unit_name
-                ])
-                self.log.info('user:%s Unit %s in failed state, resetting', self.user.name, self.unit_name)
-        except subprocess.CalledProcessError as e:
-            # This is returned when the unit is *not* in failed state. bah!
-            pass
-
         # If there's a unit with this name running already. This means a bug in
-        # JupyterHub, or a remnant from a previous install of JupyterHub.
-        # Regardless, we kill it and start ours in its place.
+        # JupyterHub, a remnant from a previous install or a failed service start
+        # from earlier. Regardless, we kill it and start ours in its place.
         # FIXME: Carefully look at this when doing a security sweep.
-        already_active = False
-        try:
-            if subprocess.check_output(self.systemctl_cmd + [
-                'is-active',
-                self.unit_name
-            ]).decode('utf-8').strip() == 'active':
-                already_active = True
-        except subprocess.CalledProcessError:
-            # If unit is not already active we get this exception. Can ignore.
-            pass
-
-        if already_active:
-            # If the unit *is* already active, we must stop it.
-            # Exception here should just bubble up.
-            subprocess.check_output(self.systemctl_cmd + [
-                'stop',
-                self.unit_name
-            ])
+        if await systemd.service_running(self.unit_name):
+            await systemd.stop(self.unit_name)
             self.log.info('user:%s Unit %s already exists but not known to JupyterHub. Killing', self.user.name, self.unit_name)
+            if await systemd.service_running(self.unit_name):
+                self.log.error('user:%s Could not stop already existing unit %s', self.user.name, self.unit_name)
+                raise Exception('Could not stop already existing unit {}'.format(self.unit_name))
 
         env = self.get_env()
 
-        cmd = self.systemd_run_cmd[:]
+        properties = {}
 
-        cmd.extend(['--unit', self.unit_name])
         if self.dynamic_users:
-            cmd.extend([
-                '--property=DynamicUser=yes',
-                self._expand_user_vars('--property=StateDirectory={USERNAME}')
-            ])
+            properties['DynamicUser'] = 'yes'
+            properties['StateDirectory'] = self._expand_user_vars('{USERNAME}')
+
             # HOME is not set by default otherwise
             env['HOME'] = self._expand_user_vars('/var/lib/{USERNAME}')
             # Set working directory to $HOME too
             self.user_workingdir = env['HOME']
+            # Set uid, gid = None so we don't set them
+            uid = gid = None
         else:
             try:
                 pwnam = pwd.getpwnam(self.user.name)
             except KeyError:
                 self.log.exception('No user named %s found in the system' % self.user.name)
                 raise
-            cmd.extend(['--uid', str(pwnam.pw_uid), '--gid', str(pwnam.pw_gid)])
+            uid = pwnam.pw_uid
+            gid = pwnam.pw_gid
 
         if self.isolate_tmp:
-            cmd.extend(['--property=PrivateTmp=yes'])
+            properties['PrivateTmp'] = 'yes'
 
         if self.isolate_devices:
-            cmd.extend(['--property=PrivateDevices=yes'])
+            properties['PrivateDevices'] = 'yes'
 
         if self.extra_paths:
             env['PATH'] = '{extrapath}:{curpath}'.format(
@@ -264,89 +222,60 @@ class SystemdSpawner(Spawner):
                 )
             )
 
-        for key, value in env.items():
-            cmd.append('--setenv={key}={value}'.format(key=key, value=value))
-
-        cmd.append('--setenv=SHELL={shell}'.format(shell=self.default_shell))
+        env['SHELL'] = self.default_shell
 
         if self.mem_limit is not None:
             # FIXME: Detect & use proper properties for v1 vs v2 cgroups
-            cmd.extend([
-                '--property=MemoryAccounting=yes',
-                '--property=MemoryLimit={mem}'.format(mem=self.mem_limit),
-            ])
+            properties['MemoryAccounting'] = 'yes'
+            properties['MemoryLimit'] = self.mem_limit
 
         if self.cpu_limit is not None:
             # FIXME: Detect & use proper properties for v1 vs v2 cgroups
             # FIXME: Make sure that the kernel supports CONFIG_CFS_BANDWIDTH
             #        otherwise this doesn't have any effect.
-            cmd.extend([
-                '--property=CPUAccounting=yes',
-                '--property=CPUQuota={quota}%'.format(quota=int(self.cpu_limit * 100))
-            ])
+            properties['CPUAccounting'] = 'yes'
+            properties['CPUQuota'] = '{}%'.format(int(self.cpu_limit * 100))
 
         if self.disable_user_sudo:
-            cmd.append('--property=NoNewPrivileges=yes')
+            properties['NoNewPrivileges'] = 'yes'
 
         if self.readonly_paths is not None:
-            cmd.extend([
-                self._expand_user_vars('--property=ReadOnlyDirectories=-{path}'.format(path=path))
+            properties['ReadOnlyDirectories'] = [
+                self._expand_user_vars(path)
                 for path in self.readonly_paths
-            ])
+            ]
 
         if self.readwrite_paths is not None:
-            cmd.extend([
-                self._expand_user_vars('--property=ReadWriteDirectories={path}'.format(path=path))
+            properties['ReadWriteDirectories'] = [
+                self._expand_user_vars(path)
                 for path in self.readwrite_paths
-            ])
+            ]
 
-        if self.unit_extra_properties is not None:
-            cmd.extend([
-                self._expand_user_vars('--property={prop}'.format(prop=prop))
-                for prop in self.unit_extra_properties
-            ])
+        properties.update(self.unit_extra_properties)
 
-        # We unfortunately have to resort to doing cd with bash, since WorkingDirectory property
-        # of systemd units can't be set for transient units via systemd-run until systemd v227.
-        # Centos 7 has systemd 219, and will probably never upgrade - so we need to support them.
-        bash_cmd = [
-            '/bin/bash',
-            '-c',
-            "cd {wd} && exec {cmd} {args}".format(
-                wd=shlex.quote(self._expand_user_vars(self.user_workingdir)),
-                cmd=' '.join([shlex.quote(self._expand_user_vars(c)) for c in self.cmd]),
-                args=' '.join([shlex.quote(a) for a in self.get_args()])
-            )
-        ]
-        cmd.extend(bash_cmd)
-
-        self.log.debug('user:%s Running systemd-run with: %s', self.user.name, ' '.join(cmd))
-        subprocess.check_output(cmd)
+        await systemd.start_transient_service(
+            self.unit_name,
+            cmd=[self._expand_user_vars(c) for c in self.cmd],
+            args=[self._expand_user_vars(a) for a in self.get_args()],
+            working_dir=self._expand_user_vars(self.user_workingdir),
+            environment_variables=env,
+            properties=properties,
+            uid=uid,
+            gid=gid
+        )
 
         for i in range(self.start_timeout):
-            is_up = yield self.poll()
+            is_up = await self.poll()
             if is_up is None:
                 return (self.ip or '127.0.0.1', self.port)
-            yield gen.sleep(1)
+            await asyncio.sleep(1)
 
         return None
 
-    @gen.coroutine
-    def stop(self, now=False):
-        subprocess.check_output(self.systemctl_cmd + [
-            'stop',
-            self.unit_name
-        ])
+    async def stop(self, now=False):
+        await systemd.stop_service(self.unit_name)
 
-    @gen.coroutine
-    def poll(self):
-        try:
-            if subprocess.check_call(self.systemctl_cmd + [
-                'is-active',
-                self.unit_name
-            ], stdout=open('/dev/null', 'w'), stderr=open('/dev/null', 'w')) == 0:
-                self.log.debug('user:%s unit %s is active', self.user.name, self.unit_name)
-                return None
-        except subprocess.CalledProcessError as e:
-            self.log.debug('user:%s unit %s is not active', self.user.name, self.unit_name)
-            return e.returncode
+    async def poll(self):
+        if await systemd.service_running(self.unit_name):
+            return None
+        return 1
