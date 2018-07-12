@@ -153,6 +153,7 @@ in your `jupyterhub_config.py` file:
 - **[`mem_limit`](#mem_limit)**
 - **[`cpu_limit`](#cpu_limit)**
 - **[`user_workingdir`](#user_workingdir)**
+- **[`username_template`](#username_template)**
 - **[`default_shell`](#default_shell)**
 - **[`extra_paths`](#extra_paths)**
 - **[`unit_name_template`](#unit_name_template)**
@@ -233,7 +234,22 @@ appropriate values for the user being spawned.
 c.SystemdSpawner.user_workingdir = '/home/{USERNAME}'
 ```
 
-Defaults to `/home/{USERNAME}`.
+Defaults to the home directory of the user. Not respected if `dynamic_users` is true.
+
+### `username_template` ###
+
+Template for unix username each user should be spawned as.
+
+`{USERNAME}` and `{USERID}` in this configuration value will be expanded to the
+appropriate values for the user being spawned.
+
+This user should already exist in the system.
+
+```python
+c.SystemdSpawner.username_template = 'jupyter-{USERNAME}'
+```
+
+Not respected if `dynamic_users` is set to True
 
 ### `default_shell` ###
 
