@@ -217,9 +217,10 @@ class SystemdSpawner(Spawner):
             uid = gid = None
         else:
             try:
-                pwnam = pwd.getpwnam(self._expand_user_vars(self.username_template))
+                unix_username = self._expand_user_vars(self.username_template)
+                pwnam = pwd.getpwnam(unix_username)
             except KeyError:
-                self.log.exception('No user named %s found in the system' % self.user.name)
+                self.log.exception('No user named {} found in the system'.format(unix_username))
                 raise
             uid = pwnam.pw_uid
             gid = pwnam.pw_gid
