@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.11
+
+### New Features
+
+- **Username templates** let you map jupyterhub usernames to different system usernames. Extremely
+  useful for prefixing usernames to prevent collisions.
+
+### Bug fixes
+
+- Users' home directories now properly read from pwd database, rather than assumed to be under `/home`.
+  Thanks to [@cpainterwakefield](https://github.com/cpainterwakefield) for reporting & suggested PR!
+
 ## v0.10
 
 ### Breaking changes
