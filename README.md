@@ -233,7 +233,22 @@ appropriate values for the user being spawned.
 c.SystemdSpawner.user_workingdir = '/home/{USERNAME}'
 ```
 
-Defaults to `/home/{USERNAME}`.
+Defaults to the home directory of the user.
+
+### `username_template` ###
+
+Template for unix username each user should be spawned as.
+
+`{USERNAME}` and `{USERID}` in this configuration value will be expanded to the
+appropriate values for the user being spawned.
+
+This user should already exist in the system.
+
+```python
+c.SystemdSpawner.username_template = 'jupyter-{USERNAME}'
+```
+
+Not respected if dynamic_users is set to True
 
 ### `default_shell` ###
 

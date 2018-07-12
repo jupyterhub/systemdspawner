@@ -12,13 +12,29 @@ from jupyterhub.utils import random_port
 
 class SystemdSpawner(Spawner):
     user_workingdir = Unicode(
-        '/home/{USERNAME}',
+        None,
+        allow_none=True,
         help="""
         Path to start each notebook user on.
 
         {USERNAME} and {USERID} are expanded.
 
+        Defaults to the home directory of the user.
+
         Not respected if dynamic_users is set to True.
+        """
+    ).tag(config=True)
+
+    username_template = Unicode(
+        '{USERNAME}',
+        help="""
+        Template for unix username each user should be spawned as.
+
+        {USERNAME} and {USERID} are expanded.
+
+        This user should already exist in the system.
+
+        Not respected if dynamic_users is set to True
         """
     ).tag(config=True)
 
@@ -196,17 +212,21 @@ class SystemdSpawner(Spawner):
             # HOME is not set by default otherwise
             env['HOME'] = self._expand_user_vars('/var/lib/{USERNAME}')
             # Set working directory to $HOME too
-            self.user_workingdir = env['HOME']
+            working_dir = env['HOME']
             # Set uid, gid = None so we don't set them
             uid = gid = None
         else:
             try:
-                pwnam = pwd.getpwnam(self.user.name)
+                pwnam = pwd.getpwnam(self._expand_user_vars(self.username_template))
             except KeyError:
                 self.log.exception('No user named %s found in the system' % self.user.name)
                 raise
             uid = pwnam.pw_uid
             gid = pwnam.pw_gid
+            if self.user_workingdir is None:
+                working_dir = pwnam.pw_dir
+            else:
+                working_dir = self._expand_user_vars(self.user_workingdir)
 
         if self.isolate_tmp:
             properties['PrivateTmp'] = 'yes'
@@ -257,7 +277,7 @@ class SystemdSpawner(Spawner):
             self.unit_name,
             cmd=[self._expand_user_vars(c) for c in self.cmd],
             args=[self._expand_user_vars(a) for a in self.get_args()],
-            working_dir=self._expand_user_vars(self.user_workingdir),
+            working_dir=working_dir,
             environment_variables=env,
             properties=properties,
             uid=uid,
