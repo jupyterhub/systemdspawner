@@ -103,29 +103,40 @@ async def service_failed(unit_name):
     return ret == 0
 
 
-async def stop_service(unit_name):
+async def stop_service(unit_name, sudo=False):
     """
     Stop service with given name.
 
     Throws CalledProcessError if stopping fails
     """
-    proc = await asyncio.create_subprocess_exec(
-        'systemctl',
-        'stop',
-        unit_name
-    )
-    await proc.wait()
+    cmd = ['systemctl', 'stop', unit_name]
+    if sudo:
+        cmd = ['sudo', '--non-interactive'] + cmd
+    proc = await asyncio.create_subprocess_exec(*cmd)
+    return await proc.wait()
 
 
-async def reset_service(unit_name):
+async def reset_service(unit_name, sudo=False):
     """
     Reset service with given name.
 
     Throws CalledProcessError if resetting fails
     """
-    proc = await asyncio.create_subprocess_exec(
-        'systemctl',
-        'reset-failed',
-        unit_name
-    )
+    cmd = ['systemctl', 'reset-failed', unit_name]
+    if sudo:
+        cmd = ['sudo', '--non-interactive'] + cmd
+    proc = await asyncio.create_subprocess_exec(cmd)
     await proc.wait()
+
+
+async def start_service(unit_name, sudo=False):
+    """
+    Start service with given name.
+
+    Throws CalledProcessError if starting fails
+    """
+    cmd = ['systemctl', 'start', unit_name]
+    if sudo:
+        cmd = ['sudo', '--non-interactive'] + cmd
+    proc = await asyncio.create_subprocess_exec(*cmd)
+    return await proc.wait()
