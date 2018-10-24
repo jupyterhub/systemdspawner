@@ -1,0 +1,27 @@
+[Unit]
+Description=Jupyterhub Single-User Server for user %i
+Wants=jupyterhub.service
+
+[Service]
+Type=simple
+User=%i
+EnvironmentFile=/srv/jupyterhub/envs/%i.env
+ExecStart=<path to single server executable> $USERINSTANCEARGS
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+# if your WorkingDirectory is on NFS and you use systemd <= 239 setting
+# WorkingDirectory will not work, and you will have to use
+# ExecStart=/bin/bash -c "cd <your workdir> && <path to single server executable> $USERINSTANCEARGS"
+# and comment out WorkingDirectory
+WorkingDirectory=~
+ReadWritePaths=/home/%i
+NoNewPrivileges=yes
+CPUAccounting=yes
+CPUQuota=400%
+MemoryAccounting=yes
+MemoryHigh=8G
+MemoryMax=9G
