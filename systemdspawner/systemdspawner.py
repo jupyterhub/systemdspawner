@@ -195,8 +195,8 @@ class SystemdSpawner(Spawner):
         # from earlier. Regardless, we kill it and start ours in its place.
         # FIXME: Carefully look at this when doing a security sweep.
         if await systemd.service_running(self.unit_name):
-            await systemd.stop(self.unit_name)
             self.log.info('user:%s Unit %s already exists but not known to JupyterHub. Killing', self.user.name, self.unit_name)
+            await systemd.stop_service(self.unit_name)
             if await systemd.service_running(self.unit_name):
                 self.log.error('user:%s Could not stop already existing unit %s', self.user.name, self.unit_name)
                 raise Exception('Could not stop already existing unit {}'.format(self.unit_name))
