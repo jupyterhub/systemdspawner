@@ -48,7 +48,9 @@ async def start_transient_service(
     if gid is not None:
         run_cmd += ['--gid', str(gid)]
 
-    run_cmd.append('--property=WorkingDirectory={}'.format(shlex.quote(working_dir)))
+    # this line is commented out to make this script compatible with systemd <= systemd219
+    #run_cmd.append('--property=WorkingDirectory={}'.format(shlex.quote(working_dir)))
+    
     # We unfortunately have to resort to doing cd with bash, since WorkingDirectory property
     # of systemd units can't be set for transient units via systemd-run until systemd v227.
     # Centos 7 has systemd 219, and will probably never upgrade - so we need to support them.
