@@ -201,6 +201,12 @@ class SystemdSpawner(Spawner):
                 self.log.error('user:%s Could not stop already existing unit %s', self.user.name, self.unit_name)
                 raise Exception('Could not stop already existing unit {}'.format(self.unit_name))
 
+        # If there's a unit with this name already but sitting in a failed state.
+        # Does a reset of the state before trying to start it up again.
+        if await systemd.service_failed(self.unit_name):
+            self.log.info('user:%s Unit %s in a failed state. Resetting state.', self.user.name, self.unit_name)
+            await systemd.reset_service(self.unit_name)
+
         env = self.get_env()
 
         properties = {}
