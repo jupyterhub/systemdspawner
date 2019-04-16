@@ -29,6 +29,30 @@ async def test_simple_start():
 
 
 @pytest.mark.asyncio
+async def test_service_failed_reset():
+    """
+    Test service_failed and reset_service
+    """
+    unit_name = 'systemdspawner-unittest-' + str(time.time())
+    # Running a service with an invalid UID makes it enter a failed state
+    await systemd.start_transient_service(
+        unit_name,
+        ['sleep'],
+        ['2000'],
+        uid='systemdspawner-unittest-does-not-exist',
+        working_dir='/'
+    )
+
+    await asyncio.sleep(0.1)
+
+    assert await systemd.service_failed(unit_name)
+
+    await systemd.reset_service(unit_name)
+
+    assert not await systemd.service_failed(unit_name)
+
+
+@pytest.mark.asyncio
 async def test_service_running_fail():
     """
     Test service_running failing when there's no service.
