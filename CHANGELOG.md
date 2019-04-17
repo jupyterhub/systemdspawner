@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.12
+
+### New Features
+
+- Allow setting which **Systemd Slice** users' services should belong to.
+  This lets admins set policy for all JupyterHub users in one go.
+  [Thanks to [@mariusvniekerk](https://github.com/mariusvniekerk)]
+
+### Bug Fixes
+
+- Handle failed units that need reset.
+  [thanks to [@RohitK89](https://github.com/RohitK89)]
+- Fix bug in cleaning up services from a previously running
+  JupyterHub. [thanks to [@minrk](https://github.com/minrk)]
+
 ## v0.11
 
 ### New Features
