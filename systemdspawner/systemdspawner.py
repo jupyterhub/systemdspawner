@@ -137,6 +137,16 @@ class SystemdSpawner(Spawner):
         """
     ).tag(config=True)
 
+    slice = Unicode(
+        None,
+        allow_none=True,
+        help="""
+        Ensure that all users that are created are run within a given slice.
+        This allow global configuration of the maximum resources that all users
+        collectively can use by creating a a slice beforehand.
+        """
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # All traitlets configurables are configured by now
@@ -288,7 +298,8 @@ class SystemdSpawner(Spawner):
             environment_variables=env,
             properties=properties,
             uid=uid,
-            gid=gid
+            gid=gid,
+            slice=self.slice,
         )
 
         for i in range(self.start_timeout):

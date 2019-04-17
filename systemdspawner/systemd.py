@@ -17,6 +17,7 @@ async def start_transient_service(
     properties=None,
     uid=None,
     gid=None,
+    slice=None,
 ):
     """
     Start a systemd transient service with given paramters
@@ -48,6 +49,9 @@ async def start_transient_service(
     if gid is not None:
         run_cmd += ['--gid', str(gid)]
 
+    if slice is not None:
+        run_cmd += ['--slice', str(slice)]
+    
     run_cmd.append('--property=WorkingDirectory={}'.format(shlex.quote(working_dir)))
     # We unfortunately have to resort to doing cd with bash, since WorkingDirectory property
     # of systemd units can't be set for transient units via systemd-run until systemd v227.
