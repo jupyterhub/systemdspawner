@@ -39,8 +39,7 @@ async def test_service_failed_reset():
         unit_name,
         ['sleep'],
         ['2000'],
-        uid='systemdspawner-unittest-does-not-exist',
-        working_dir='/'
+        working_dir='/systemdspawner-unittest-does-not-exist'
     )
 
     await asyncio.sleep(0.1)
