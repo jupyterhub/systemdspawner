@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.12
+
+### Bug Fixes
+
+- Handle failed units that need reset.
+  [thanks to [@RohitK89](https://github.com/RohitK89)]
+- Fix bug in cleaning up services from a previously running
+  JupyterHub. [thanks to [@minrk](https://github.com/minrk)]
+
 ## v0.11
 
 ### New Features
