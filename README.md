@@ -396,7 +396,7 @@ Requires systemd 235.
 
 ### `slice` ###
 
-Run the spawed notebook in a given systemd slice.  This allows aggregate configuration that
+Run the spawned notebook in a given systemd slice.  This allows aggregate configuration that
 will apply to all the units that are launched.  This can be used (for example) to control 
 the total amount of memory that all of the notebook users can use.  
 
