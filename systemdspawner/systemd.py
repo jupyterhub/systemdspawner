@@ -50,7 +50,7 @@ async def start_transient_service(
         run_cmd += ['--gid', str(gid)]
 
     if slice is not None:
-        run_cmd += ['--slice', str(slice)]
+        run_cmd += ['--slice={}'.format(slice)]
     
     run_cmd.append('--property=WorkingDirectory={}'.format(shlex.quote(working_dir)))
     # We unfortunately have to resort to doing cd with bash, since WorkingDirectory property

@@ -394,6 +394,17 @@ information.
 
 Requires systemd 235.
 
+### `slice` ###
+
+Run the spawed notebook in a given systemd slice.  This allows aggregate configuration that
+will apply to all the units that are launched.  This can be used (for example) to control 
+the total amount of memory that all of the notebook users can use.  
+
+See https://samthursfield.wordpress.com/2015/05/07/running-firefox-in-a-cgroup-using-systemd/ for
+an example of how this could look.
+
+For detailed configuration see the [manpage](http://man7.org/linux/man-pages/man5/systemd.slice.5.html)
+
 ## Getting help ##
 
 We encourage you to ask questions on the [mailing list](https://groups.google.com/forum/#!forum/jupyter).
