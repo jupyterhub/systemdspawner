@@ -98,9 +98,35 @@ async def test_workdir():
 
         # Wait a tiny bit for the systemd unit to complete running
         await asyncio.sleep(0.1)
+ 
         with open(os.path.join(d, 'pwd')) as f:
             text = f.read().strip()
             assert text == d
+
+
+@pytest.mark.asyncio
+async def test_slice():
+    unit_name = 'systemdspawner-unittest-' + str(time.time())
+    _, env_filename = tempfile.mkstemp()
+    with tempfile.TemporaryDirectory() as d:
+        await systemd.start_transient_service(
+            unit_name,
+            ['/bin/bash'],
+            ['-c', 'pwd > {}/pwd; sleep 10;'.format(d)],
+            working_dir=d,
+            slice='user.slice',
+        )
+
+        # Wait a tiny bit for the systemd unit to complete running
+        await asyncio.sleep(0.1)
+
+        proc = await asyncio.create_subprocess_exec(
+            *['systemctl', 'status', unit_name],
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE)
+
+        stdout, stderr = await proc.communicate()
+        assert b'user.slice' in stdout
 
 
 @pytest.mark.asyncio
