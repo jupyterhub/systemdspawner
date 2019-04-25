@@ -145,7 +145,7 @@ class SystemdSpawner(Spawner):
         This allow global configuration of the maximum resources that all users
         collectively can use by creating a a slice beforehand.
         """
-    )
+    ).tag(config=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
