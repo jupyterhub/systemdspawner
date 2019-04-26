@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.13
+
+### Bug Fixes
+
+- Fix `slice` support by making it a configurable option
+
 ## v0.12
 
 ### New Features
