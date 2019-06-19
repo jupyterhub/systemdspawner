@@ -6,6 +6,7 @@ Probably not very useful outside this spawner.
 """
 import asyncio
 import shlex
+import sys
 
 
 async def start_transient_service(
@@ -22,6 +23,8 @@ async def start_transient_service(
     """
     Start a systemd transient service with given paramters
     """
+
+    env_bin_path = sys.exec_prefix + '/bin'
 
     run_cmd = [
         'systemd-run',
@@ -58,8 +61,10 @@ async def start_transient_service(
     run_cmd += [
         '/bin/bash',
         '-c',
+        'export PATH={env_bin_path}:$PATH && ',
         "cd {wd} && exec {cmd} {args}".format(
             wd=shlex.quote(working_dir),
+            env_bin_path=env_bin_path,
             cmd=' '.join([shlex.quote(c) for c in cmd]),
             args=' '.join([shlex.quote(a) for a in args])
         )
