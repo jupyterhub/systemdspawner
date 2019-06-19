@@ -92,10 +92,14 @@ the [`check-kernel.bash`](check-kernel.bash) script.
 
 ### Root access ###
 
-Currently, JupyterHub must be run as root to use Systemd Spawner. `systemd-run`
-needs to be run as root to be able to set memory & cpu limits. Simple sudo rules
-do not help, since unrestricted access to `systemd-run` is equivalent to root. We
-will explore hardening approaches soon.
+`systemd-run` needs to be run as root to be able to set memory & cpu limits. 
+JupyterHub need to be run as root to use Systemd Spawner or `sudoers` setting, like
+```
+# /etc/sudoers.d/jupyter
+Cmnd_Alias SYSTEMDSPAWNER_SYSTEMD_RUN = /usr/bin/systemd-run
+Cmnd_Alias SYSTEMDSPAWNER_SYSTEMCTL = /usr/bin/systemctl
+rhea ALL=(root) NOPASSWD: SYSTEMDSPAWNER_SYSTEMD_RUN, SYSTEMDSPAWNER_SYSTEMCTL
+```
 
 ### Local Users ###
 
