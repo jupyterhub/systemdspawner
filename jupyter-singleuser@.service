@@ -25,3 +25,4 @@ CPUQuota=400%
 MemoryAccounting=yes
 MemoryHigh=8G
 MemoryMax=9G
+PAMName=%i
