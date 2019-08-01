@@ -92,10 +92,15 @@ the [`check-kernel.bash`](check-kernel.bash) script.
 
 ### Root access ###
 
-Currently, JupyterHub must be run as root to use Systemd Spawner. `systemd-run`
-needs to be run as root to be able to set memory & cpu limits. Simple sudo rules
-do not help, since unrestricted access to `systemd-run` is equivalent to root. We
-will explore hardening approaches soon.
+When using `SystemdSpawner` JupyterHub must be run as root, because the single
+users instances are started via `systemd-run`, which needs to be run as root to
+be able to set memory & cpu limits. Simple sudo rules do not help, since
+unrestricted access to `systemd-run` is equivalent to root.
+
+If you wish to run JupyterHub as a regular system user, you can use
+`SystemdNonTransientSpawner`, which will use the template service file
+`jupyter-singleuser@.service` to start the singleuser servers. In this case you
+must also install a sudoers or policykit rule (see below).
 
 ### Local Users ###
 
@@ -163,6 +168,10 @@ in your `jupyterhub_config.py` file:
 - **[`readonly_paths`](#readonly_paths)**
 - **[`readwrite_paths`](#readwrite_paths)**
 - **[`dynamic_users`](#dynamic_users)**
+
+Beware, when you are using `SystemdNonTransientSpawner`, you cannot use these
+configuration options, but have to set the options in the systemd service files
+(more on this below).
 
 ### `mem_limit` ###
 
@@ -404,6 +413,157 @@ See https://samthursfield.wordpress.com/2015/05/07/running-firefox-in-a-cgroup-u
 an example of how this could look.
 
 For detailed configuration see the [manpage](http://man7.org/linux/man-pages/man5/systemd.slice.5.html)
+
+## non-root SystemdSpawner
+
+The spawner class `SystemdNonTransientSpawner` provides a way to spawn
+singleuser servers, when running JupyterHub as a regular system user.
+
+In this case all JupyterHub does is to run `systemctl start` and `systemctl
+stop` to start a template unit.
+
+To be able to do this, the user under which JupyterHub is running needs
+permission to do so, which can be granted either via sudo or policykit.
+
+Using the non-root spawner also allows you to set user specific settings for
+every user to your hearts desire, by providing extra files
+`jupyter-singleuser@foobar.service` for any user `foobar`. See `man
+systemd.directives` for documentation on all possible settings and the
+subsection at the end of this one for examples.
+
+### Permissions
+
+The sudo way works on all Linux systems and **must** be used on Debian and
+Ubuntu, since they don't provide the proper policykit version.
+
+```
+Cmnd_Alias JUPYTERSTART = /usr/bin/systemctl start jupyter-singleuser@[[\:alpha\:]]?[[\:alnum\:]]*.service
+Cmnd_Alias JUPYTERSTOP = /usr/bin/systemctl stop jupyter-singleuser@[[\:alpha\:]]?[[\:alnum\:]]*.service
+Cmnd_Alias JUPYTERRESET = /usr/bin/systemctl reset-failed jupyter-singleuser@[[\:alpha\:]]?[[\:alnum\:]]*.service
+Defaults!JUPTERSTART !requiretty
+Defaults!JUPTERSTOP !requiretty
+Defaults!JUPTERRESET !requiretty
+jupyter HOST = (root) NOPASSWD: JUPYTERSTART
+jupyter HOST = (root) NOPASSWD: JUPYTERSTOP
+jupyter HOST = (root) NOPASSWD: JUPYTERRESET
+```
+
+If you are on a non-Debian-derived distro and run policykit version 106 or newer
+(basically anything but Debian-derived distros), you can also use the following
+policykit rule instead.
+
+```javascript
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.systemd1.manage-units") {
+        if (action.lookup("unit").match(/^jupyter-singleuser@[a-zA-Z]?\w*.service$/)) {
+            var verb = action.lookup("verb");
+            if ((verb == "start" ||
+                 verb == "stop" ||
+                 verb == "reset-failed") &&
+                subject.user == "jupyter") {
+                return polkit.Result.YES;
+            }
+        }
+    }
+});
+```
+
+When using a sudo rule you may not set `NoNewPrivileges=yes` for the JupyterHub
+service.
+
+Be sure to tweak the character classes in the above examples, if you have
+usernames containing characters not covered by these.
+
+### Config
+
+#### `unit_template`
+
+```python
+c.SystemdSpawner.unit_template = 'jupyter-singleuser@{USERNAME}.service'
+```
+
+This is the name of the template unit for the singleuser server services.
+
+#### `envfile_template`
+
+```python
+c.SystemdSpawner.envfile_template = '/srv/jupyterhub/envs/{USERNAME}.env'
+```
+
+This is the path template for the environment files that are used to communicate
+the environment to the singleuser servers. The files are made readable for the
+executing user via ACLs, so the filesystem must support them, which should
+generally be the case.
+
+We are looking to improve on this and use other communication mechanisms.
+
+#### `use_sudo`
+
+```python
+c.SystemdSpawner.use_sudo = False
+```
+
+Whether to use sudo for starting the singleuser servers.
+
+### Service files
+
+The non-root spawner has been tested with these service files.
+```
+# /etc/systemd/system/jupyterhub.service
+[Unit]
+Description=Jupyterhub
+# when using postgres or mysql, be sure to also order them after those
+After=network-online.target nginx.service
+
+[Service]
+User=jupyter
+Environment="PATH=<path to venv>/bin:<path to venv>/node_modules/.bin/:/usr/bin:/usr/local/bin:
+ExecStart=<path to venv>/bin/jupyterhub --config /etc/jupyterhub/jupyterhub_config.py
+PrivateTmp=yes
+# NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+WorkingDirectory=/srv/jupyterhub
+# when using sudo also set /run/sudo/ts/jupyter as writable
+ReadWritePaths=/srv/jupyterhub
+
+[Install]
+WantedBy=multi-user.target
+```
+and
+```
+# /etc/systemd/system/jupyter-singleuser@.service
+[Unit]
+Description=Jupyterhub Single-User Server for user %i
+Requires=jupyterhub.service
+
+[Service]
+Type=simple
+User=%i
+EnvironmentFile=/srv/jupyterhub/envs/%i.env
+ExecStart=<path to venv>/bin/jupyterhub-singleuser $USERINSTANCEARGS
+# when using systemd <241 use this
+#ExecStart=/bin/bash -c "cd /home/%i && <path to venv>/bin/jupyter-singleuser $USERINSTANCEARGS"
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+# If you are running systemd <241 you must use /home/%i here
+WorkingDirectory=~
+ReadWritePaths=/home/%i /net/storage/%i
+# NoNewPrivileges=yes
+CPUAccounting=yes
+CPUQuota=400%
+MemoryAccounting=yes
+MemoryHigh=8G
+MemoryMax=9G
+PAMName=%i
+```
+
+The usage of `PAMName` in the singleuser service file is optional, but allows
+you to e.g. add missing home folders, when using the appropriate PAM modules.
 
 ## Getting help ##
 
