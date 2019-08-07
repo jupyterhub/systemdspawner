@@ -1,13 +1,13 @@
 import os
 import pwd
 import subprocess
-from traitlets import Bool, Unicode, List, Dict
+from traitlets import Bool, Unicode, List, Dict, Any
 import asyncio
 
 from systemdspawner import systemd
 
 from jupyterhub.spawner import Spawner
-from jupyterhub.utils import random_port
+from jupyterhub.utils import random_port, maybe_future
 
 
 class SystemdSpawner(Spawner):
@@ -145,6 +145,26 @@ class SystemdSpawner(Spawner):
         This allow global configuration of the maximum resources that all users
         collectively can use by creating a a slice beforehand.
         """
+    ).tag(config=True)
+
+    post_start_hook = Any(
+        help="""
+           An optional hook function that you can implement to do some
+           bootstrapping work just after the systemd service starts. 
+           For example, create a directory for your user or load initial content, 
+           while referencing dynamic user attributes.
+
+           This maybe a coroutine.
+
+           Example::
+
+               from subprocess import check_call
+               def my_hook(spawner):
+                   username = spawner.user.name
+                   check_call(['./examples/bootstrap-script/bootstrap.sh', username])
+
+               c.SystemdSpawner.post_start_hook = my_hook
+           """
     ).tag(config=True)
 
     def __init__(self, *args, **kwargs):
@@ -305,6 +325,8 @@ class SystemdSpawner(Spawner):
         for i in range(self.start_timeout):
             is_up = await self.poll()
             if is_up is None:
+                # run optional post-start prep work
+                await maybe_future(self.run_post_start_hook())
                 return (self.ip or '127.0.0.1', self.port)
             await asyncio.sleep(1)
 
@@ -317,3 +339,8 @@ class SystemdSpawner(Spawner):
         if await systemd.service_running(self.unit_name):
             return None
         return 1
+
+    def run_post_start_hook(self):
+        """Run the post_start_hook if defined"""
+        if self.post_start_hook:
+            return self.post_start_hook(self)
