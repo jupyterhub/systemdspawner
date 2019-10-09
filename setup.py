@@ -10,6 +10,11 @@ setup(
     author_email='yuvipanda@gmail.com',
     license='3 Clause BSD',
     packages=['systemdspawner'],
+    entry_points={
+        'jupyterhub.spawners': [
+            'systemdspawner = systemdspawner:SystemdSpawner',
+        ],
+    },
     install_requires=[
         'jupyterhub>=0.9',
         'tornado>=5.0'
