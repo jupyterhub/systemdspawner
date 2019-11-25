@@ -145,6 +145,11 @@ You can enable it for your jupyterhub with the following lines in your
 c.JupyterHub.spawner_class = 'systemdspawner.SystemdSpawner'
 ```
 
+Note that to confirm systemdspawner has been installed in the correct jupyterhub
+environment, a newly generated config file should list `systemdspawner` as one of the
+available spawner classes in the comments above the configuration line.
+
+
 ## Configuration ##
 
 Lots of configuration options for you to choose! You should put all of these
@@ -397,8 +402,8 @@ Requires systemd 235.
 ### `slice` ###
 
 Run the spawned notebook in a given systemd slice.  This allows aggregate configuration that
-will apply to all the units that are launched.  This can be used (for example) to control 
-the total amount of memory that all of the notebook users can use.  
+will apply to all the units that are launched.  This can be used (for example) to control
+the total amount of memory that all of the notebook users can use.
 
 See https://samthursfield.wordpress.com/2015/05/07/running-firefox-in-a-cgroup-using-systemd/ for
 an example of how this could look.
