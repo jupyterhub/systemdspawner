@@ -162,6 +162,7 @@ in your `jupyterhub_config.py` file:
 - **[`default_shell`](#default_shell)**
 - **[`extra_paths`](#extra_paths)**
 - **[`unit_name_template`](#unit_name_template)**
+- **[`unit_extra_properties`](#unit_extra_properties)**
 - **[`isolate_tmp`](#isolate_tmp)**
 - **[`isolate_devices`](#isolate_devices)**
 - **[`disable_user_sudo`](#disable_user_sudo)**
@@ -297,6 +298,15 @@ c.SystemdSpawner.unit_name_template = 'jupyter-{USERNAME}-singleuser'
 appropriate values for the user being spawned.
 
 Defaults to `jupyter-{USERNAME}-singleuser`
+
+### `unit_extra_properties` ###
+Dict of key-value pairs used to add arbitrary properties to the spawned Jupyerhub units.
+```python
+c.SystemdSpawner.unit_extra_properties = {'LimitNOFILE': '16384'}
+```
+Read `man systemd-run` for details on per-unit properties available in transient units.
+
+Defaults to `{}` which doesn't add any extra properties to the transient scope.
 
 ### `isolate_tmp` ###
 
