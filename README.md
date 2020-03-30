@@ -79,7 +79,7 @@ systemd v211. The security related features require systemd v228 or v227. We rec
 with at least systemd v228. You can check which version of systemd is running with:
 
 ```bash
-$ systemd --version | head -1
+$ systemctl --version | head -1
 systemd 231
 ```
 
