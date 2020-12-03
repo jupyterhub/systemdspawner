@@ -65,23 +65,42 @@ async def test_service_running_fail():
 async def test_env_setting():
     unit_name = 'systemdspawner-unittest-' + str(time.time())
     with tempfile.TemporaryDirectory() as d:
+        os.chmod(d, 0o777)
         await systemd.start_transient_service(
             unit_name,
-            ['/bin/bash'],
-            ['-c', 'env > {}/env'.format(d)],
-            working_dir='/',
+            ["/bin/bash"],
+            ["-c", "pwd; ls -la {0}; env > ./env; sleep 3".format(d)],
+            working_dir=d,
             environment_variables={
-                'TESTING_SYSTEMD_ENV_1': 'TEST_1',
-                'TESTING_SYSTEMD_ENV_2': 'TEST_2'
-            }
+                "TESTING_SYSTEMD_ENV_1": "TEST 1",
+                "TESTING_SYSTEMD_ENV_2": "TEST 2",
+            },
+            # set user to ensure we are testing permission issues
+            properties={
+                "User": "65534",
+            },
         )
+        env_dir = os.path.join(systemd.RUN_ROOT, unit_name)
+        assert os.path.isdir(env_dir)
+        assert (os.stat(env_dir).st_mode & 0o777) == 0o700
 
         # Wait a tiny bit for the systemd unit to complete running
         await asyncio.sleep(0.1)
+        assert await systemd.service_running(unit_name)
+
+        env_file = os.path.join(env_dir, f"{unit_name}.env")
+        assert os.path.exists(env_file)
+        assert (os.stat(env_file).st_mode & 0o777) == 0o400
+        # verify that the env had the desired effect
         with open(os.path.join(d, 'env')) as f:
             text = f.read()
-            assert 'TESTING_SYSTEMD_ENV_1=TEST_1' in text
-            assert 'TESTING_SYSTEMD_ENV_2=TEST_2' in text
+            assert "TESTING_SYSTEMD_ENV_1=TEST 1" in text
+            assert "TESTING_SYSTEMD_ENV_2=TEST 2" in text
+
+        await systemd.stop_service(unit_name)
+        assert not await systemd.service_running(unit_name)
+        # systemd cleans up env file
+        assert not os.path.exists(env_file)
 
 
 @pytest.mark.asyncio
