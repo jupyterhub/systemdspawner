@@ -185,11 +185,10 @@ async def test_properties_list():
             ['-c', 'pwd > test-1/test-2/pwd'],
             working_dir=d,
             properties={
-                'ExecStartPre': [
-                    '/bin/mkdir test-1',
-                    '/bin/mkdir test-1/test-2'
+                "ExecStartPre": [
+                    f"/bin/mkdir -p {d}/test-1/test-2",
                 ],
-            }
+            },
         )
 
         # Wait a tiny bit for the systemd unit to complete running
