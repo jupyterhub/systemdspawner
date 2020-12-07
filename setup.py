@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='jupyterhub-systemdspawner',
-    version='0.14',
+    version='0.15.0',
     description='JupyterHub Spawner using systemd for resource isolation',
     long_description='See https://github.com/jupyterhub/systemdspawner for more info',
     url='https://github.com/jupyterhub/systemdspawner',
