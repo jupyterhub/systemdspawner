@@ -1,10 +1,15 @@
 # Changelog
 
-## v0.14
+## v0.15
 
 Fixes vulnerability [GHSA-cg54-gpgr-4rm6](https://github.com/jupyterhub/systemdspawner/security/advisories/GHSA-cg54-gpgr-4rm6) affecting all previous releases.
 
 - Use EnvironmentFile to pass environment variables to units.
+
+## v0.14
+
+- define entrypoints for JupyterHub spawner configuration
+- Fixes for CentOS 7
 
 ## v0.13
 
