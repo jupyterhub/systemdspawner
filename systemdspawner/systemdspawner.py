@@ -137,6 +137,13 @@ class SystemdSpawner(Spawner):
         """
     ).tag(config=True)
 
+    append_name = Bool(
+        True,
+        help="""
+        Append -{self.name} to the unit if using c.JupyterHub.allow_named_servers
+        """
+    ).tag(config=True)
+
     slice = Unicode(
         None,
         allow_none=True,
@@ -151,6 +158,8 @@ class SystemdSpawner(Spawner):
         super().__init__(*args, **kwargs)
         # All traitlets configurables are configured by now
         self.unit_name = self._expand_user_vars(self.unit_name_template)
+        if self.append_name and self.name:
+            self.unit_name = self.unit_name + '-' + self.name
 
         self.log.debug('user:%s Initialized spawner with unit %s', self.user.name, self.unit_name)
 
