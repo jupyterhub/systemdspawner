@@ -53,11 +53,11 @@ class SystemdSpawner(Spawner):
     ).tag(config=True)
 
     unit_name_template = Unicode(
-        'jupyter-{USERNAME}-singleuser',
+        'jupyter-{USERNAME}-singleuser-{SERVERNAME}',
         help="""
         Template to use to make the systemd service names.
 
-        {USERNAME} and {USERID} are expanded}
+        {USERNAME}, {SERVERNAME}, and {USERID} are expanded}
         """
     ).tag(config=True)
 
@@ -137,13 +137,6 @@ class SystemdSpawner(Spawner):
         """
     ).tag(config=True)
 
-    append_name = Bool(
-        True,
-        help="""
-        Append -{self.name} to the unit if using c.JupyterHub.allow_named_servers
-        """
-    ).tag(config=True)
-
     slice = Unicode(
         None,
         allow_none=True,
@@ -158,8 +151,6 @@ class SystemdSpawner(Spawner):
         super().__init__(*args, **kwargs)
         # All traitlets configurables are configured by now
         self.unit_name = self._expand_user_vars(self.unit_name_template)
-        if self.append_name and self.name:
-            self.unit_name = self.unit_name + '-' + self.name
 
         self.log.debug('user:%s Initialized spawner with unit %s', self.user.name, self.unit_name)
 
@@ -170,11 +161,14 @@ class SystemdSpawner(Spawner):
         Currently expands:
           {USERNAME} -> Name of the user
           {USERID} -> UserID
+          {SERVERNAME} -> Name of the server (self.name)
         """
+        # Strip the trailing - if we don't have a name.
         return string.format(
             USERNAME=self.user.name,
-            USERID=self.user.id
-        )
+            USERID=self.user.id,
+            SERVERNAME=self.name
+        ).rstrip('-')
 
     def get_state(self):
         """
