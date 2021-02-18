@@ -3,7 +3,9 @@ import pwd
 import subprocess
 from traitlets import Bool, Unicode, List, Dict
 import asyncio
+import string
 
+import escapism
 from systemdspawner import systemd
 
 from jupyterhub.spawner import Spawner
@@ -147,6 +149,9 @@ class SystemdSpawner(Spawner):
         """
     ).tag(config=True)
 
+    # Characters that are safe for systemd units.
+    safe_chars = set(string.ascii_lowercase + string.digits + string.ascii_uppercase + '_-')
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # All traitlets configurables are configured by now
@@ -154,7 +159,13 @@ class SystemdSpawner(Spawner):
 
         self.log.debug('user:%s Initialized spawner with unit %s', self.user.name, self.unit_name)
 
-    def _expand_user_vars(self, string):
+    def _escape_variable(self, in_string):
+        """
+        Escape variables for systemd unit naming
+        """
+        return escapism.escape(in_string, safe=self.safe_chars, escape_char='-')
+
+    def _expand_user_vars(self, in_string):
         """
         Expand user related variables in a given string
 
@@ -164,10 +175,10 @@ class SystemdSpawner(Spawner):
           {SERVERNAME} -> Name of the server (self.name)
         """
         # Strip the trailing - if we don't have a name.
-        return string.format(
-            USERNAME=self.user.name,
+        return in_string.format(
+            USERNAME=self._escape_variable(self.user.name),
             USERID=self.user.id,
-            SERVERNAME=self.name
+            SERVERNAME=self._escape_variable(self.name)
         ).rstrip('-')
 
     def get_state(self):
@@ -208,7 +219,8 @@ class SystemdSpawner(Spawner):
         # from earlier. Regardless, we kill it and start ours in its place.
         # FIXME: Carefully look at this when doing a security sweep.
         if await systemd.service_running(self.unit_name):
-            self.log.info('user:%s Unit %s already exists but not known to JupyterHub. Killing', self.user.name, self.unit_name)
+            self.log.info('user:%s Unit %s already exists but not known to JupyterHub. Killing', self.user.name,
+                          self.unit_name)
             await systemd.stop_service(self.unit_name)
             if await systemd.service_running(self.unit_name):
                 self.log.error('user:%s Could not stop already existing unit %s', self.user.name, self.unit_name)

@@ -23,5 +23,6 @@ setup(
     install_requires=[
         "jupyterhub>=0.9",
         "tornado>=5.0",
+        "escapism"
     ],
 )
