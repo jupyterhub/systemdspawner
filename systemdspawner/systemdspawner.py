@@ -149,8 +149,23 @@ class SystemdSpawner(Spawner):
         """
     ).tag(config=True)
 
+    unit_trailing_character = Unicode(
+        '-',
+        help="""
+        When using a unit that ends in a SERVERNAME strip this character from the end of the parsed string. 
+        """
+    ).tag(config=True)
+
+    escape_char = Unicode(
+        ':',
+        help="""
+        The character to change invalid safe characters to.
+        """
+    ).tag(config=True)
+
     # Characters that are safe for systemd units.
-    safe_chars = set(string.ascii_lowercase + string.digits + string.ascii_uppercase + '_-')
+    safe_chars = set(string.ascii_lowercase + string.digits + string.ascii_uppercase + ':-_.\\')
+    max_unit_length = 248
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -163,7 +178,10 @@ class SystemdSpawner(Spawner):
         """
         Escape variables for systemd unit naming
         """
-        return escapism.escape(in_string, safe=self.safe_chars, escape_char='-')
+        if len(in_string) > self.max_unit_length:
+            self.log.warning(f'String is longer than {self.max_unit_length}')
+        # Slice the string to the max unit length
+        return escapism.escape(in_string[:self.max_unit_length], safe=self.safe_chars, escape_char=self.escape_char)
 
     def _expand_user_vars(self, in_string):
         """
@@ -175,11 +193,11 @@ class SystemdSpawner(Spawner):
           {SERVERNAME} -> Name of the server (self.name)
         """
         # Strip the trailing - if we don't have a name.
-        return in_string.format(
-            USERNAME=self._escape_variable(self.user.name),
+        return self._escape_variable(in_string.format(
+            USERNAME=self.user.name,
             USERID=self.user.id,
-            SERVERNAME=self._escape_variable(self.name)
-        ).rstrip('-')
+            SERVERNAME=self.name
+        )).rstrip(self.unit_trailing_character)
 
     def get_state(self):
         """
