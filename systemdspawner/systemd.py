@@ -9,12 +9,40 @@ import asyncio
 import os
 import re
 import shlex
+import subprocess
 import warnings
+
+
+def systemd_version():
+    """Return running systemd version as int"""
+    minimum_version = 219
+
+    try:
+        p = subprocess.run(
+            ["systemctl", "--version"],
+            capture_output=True,
+            universal_newlines=True,
+            check=True
+        )
+
+        # the first line looks like this:
+        # 'systemd 247 (247.2-1-arch)'
+        _, version, _ = p.stdout.splitlines()[0].split()
+
+        version = int(version)
+        assert minimum_version < version
+    except (subprocess.CalledProcessError, ValueError, AssertionError):
+        return minimum_version
+
+
+SYSTEMD_VERSION = systemd_version()
+
 
 # light validation of environment variable keys
 env_pat = re.compile("[A-Za-z_]+")
 
 RUN_ROOT = "/run"
+
 
 def ensure_environment_directory(environment_file_directory):
     """Ensure directory for environment files exists and is private"""
@@ -24,7 +52,7 @@ def ensure_environment_directory(environment_file_directory):
     mode = os.stat(environment_file_directory).st_mode
     if mode & 0o077:
         warnings.warn(
-            f"Fixing permissions on environment directory {environment_file_directory}: {oct(mode)}",
+            f"Fixing permissions on environment directory {environment_file_directory}: {mode:0o}",
             RuntimeWarning,
         )
         os.chmod(environment_file_directory, 0o700)
@@ -35,7 +63,7 @@ def ensure_environment_directory(environment_file_directory):
     mode = os.stat(environment_file_directory).st_mode
     if mode & 0o077:
         warnings.warn(
-            f"Bad permissions on environment directory {environment_file_directory}: {oct(mode)}",
+            f"Bad permissions on environment directory {environment_file_directory}: {mode:0o}",
             RuntimeWarning,
         )
 
@@ -87,18 +115,20 @@ async def start_transient_service(
     else:
         properties = properties.copy()
 
-    # ensure there is a runtime directory where we can put our env file
-    # If already set, can be space-separated list of paths
-    runtime_directories = properties.setdefault("RuntimeDirectory", unit_name).split()
-
     # runtime directories are always resolved relative to `/run`
     # grab the first item, if more than one
-    runtime_dir = os.path.join(RUN_ROOT, runtime_directories[0])
-    # make runtime directories private by default
-    properties.setdefault("RuntimeDirectoryMode", "700")
-    # preserve runtime directories across restarts
-    # allows `systemctl restart` to load the env
-    properties.setdefault("RuntimeDirectoryPreserve", "restart")
+    runtime_dir = os.path.join(RUN_ROOT, unit_name.split()[0])
+
+    if SYSTEMD_VERSION >= 228:
+        # ensure there is a runtime directory where we can put our env file
+        # If already set, can be space-separated list of paths
+        runtime_directories = properties.setdefault("RuntimeDirectory", unit_name)
+
+        # make runtime directories private by default
+        properties.setdefault("RuntimeDirectoryMode", "700")
+        # preserve runtime directories across restarts
+        # allows `systemctl restart` to load the env
+        properties.setdefault("RuntimeDirectoryPreserve", "restart")
 
     if properties:
         for key, value in properties.items():
@@ -113,6 +143,10 @@ async def start_transient_service(
             runtime_dir, unit_name, environment_variables
         )
         run_cmd.append(f"--property=EnvironmentFile={environment_file}")
+
+    if SYSTEMD_VERSION < 228:
+        os.chown(runtime_dir, uid or -1, gid or -1)
+        os.chown(environment_file, uid or -1, gid or -1)
 
     # Explicitly check if uid / gid are not None, since 0 is valid value for both
     if uid is not None:
