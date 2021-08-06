@@ -288,6 +288,9 @@ class SystemdSpawner(Spawner):
                 for path in self.readwrite_paths
             ]
 
+        for property, value in self.unit_extra_properties.items():
+            self.unit_extra_properties[property] = self._expand_user_vars(value)
+
         properties.update(self.unit_extra_properties)
 
         await systemd.start_transient_service(
