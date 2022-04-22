@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.16
+
+- User variables (like `{USERNAME}`) are expanded in `unit_extra_parameters`,
+  thanks to [@tullis](https://github.com/tullis) - [PR #83](https://github.com/jupyterhub/systemdspawner/pull/83)
+- Some cleanup of packaging metadata, thanks to [@minrk](https://github.com/minrk) -
+  [PR #75](https://github.com/jupyterhub/systemdspawner/pull/75)
+
 ## v0.15
 
 Fixes vulnerability [GHSA-cg54-gpgr-4rm6](https://github.com/jupyterhub/systemdspawner/security/advisories/GHSA-cg54-gpgr-4rm6) affecting all previous releases.
