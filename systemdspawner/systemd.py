@@ -9,6 +9,7 @@ import asyncio
 import os
 import re
 import shlex
+import subprocess
 import warnings
 
 # light validation of environment variable keys
@@ -214,3 +215,21 @@ async def reset_service(unit_name):
         unit_name
     )
     await proc.wait()
+
+
+def fill_template_name(template, instance):
+    """
+    Fill instance name in unit template.
+    """
+    cmd = ['systemd-escape', f'--template={template}', instance]
+    proc = subprocess.run(cmd, text=True, stdout=subprocess.PIPE)
+    return proc.stdout.strip()
+
+
+def escape_name(name):
+    """
+    Fill instance name in unit template.
+    """
+    cmd = ['systemd-escape', name]
+    proc = subprocess.run(cmd, text=True, stdout=subprocess.PIPE)
+    return proc.stdout.strip()
