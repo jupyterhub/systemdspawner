@@ -233,3 +233,17 @@ def escape_name(name):
     cmd = ['systemd-escape', name]
     proc = subprocess.run(cmd, text=True, stdout=subprocess.PIPE)
     return proc.stdout.strip()
+
+
+async def unit_exists(unit_name):
+    """
+    Check if a unit exists.
+    """
+    proc = await asyncio.create_subprocess_exec(
+        'systemctl',
+        'cat',
+        unit_name,
+        stdout=asyncio.subprocess.DEVNULL
+    )
+    ret = await proc.wait()
+    return ret == 0
