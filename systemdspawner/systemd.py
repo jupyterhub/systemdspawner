@@ -174,6 +174,20 @@ async def service_failed(unit_name):
     return ret == 0
 
 
+async def start_service(unit_name):
+    """
+    Start service with given name.
+
+    Throws CalledProcessError if starting fails
+    """
+    proc = await asyncio.create_subprocess_exec(
+        'systemctl',
+        'start',
+        unit_name
+    )
+    await proc.wait()
+
+
 async def stop_service(unit_name):
     """
     Stop service with given name.
