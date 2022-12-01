@@ -185,6 +185,20 @@ class StaticSystemdSpawner(Spawner):
                 f.write(content.getvalue())
         return userconf_dir
 
+    async def move_certs(self, paths):
+        userconf_dir = self._ensure_user_spawnerconf_directory()
+        if "keyfile" in paths:
+            shutil.copy(paths["keyfile"], userconf_dir / "keyfile")
+        if "certfile" in paths:
+            shutil.copy(paths["keyfile"], userconf_dir / "certfile")
+        if "cafile" in paths:
+            shutil.copy(paths["keyfile"], userconf_dir / "cafile")
+        # TODO: The returned paths are unchanged, since there's no way to return
+        # paths, that will be resolvable later ahead of time, without resorting
+        # to systemd internals. Make the singleuser instance pick up files
+        # relative to CREDENTIALS_DIRECTORY
+        return paths
+
     async def start(self):
         self.log.info(
             "user:%s Attempting to start unit %s",
