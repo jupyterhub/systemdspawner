@@ -86,41 +86,6 @@ class StaticSystemdSpawner(Spawner):
             USERID=self.user.id,
         )
 
-    def get_state(self):
-        """
-        Save state required to reconstruct spawner from scratch
-
-        We save the unit name, just in case the unit template was changed
-        between a restart. We do not want to lost the previously launched
-        events.
-
-        JupyterHub before 0.7 also assumed your notebook was dead if it
-        saved no state, so this helps with that too!
-        """
-        state = super().get_state()
-        state["unit_name"] = self.unit_name
-        state["escaped_name"] = self.escaped_name
-        state["unit_secrets_path"] = os.fspath(self.unit_secrets_path)
-        return state
-
-    def load_state(self, state):
-        """
-        Load state from storage required to reinstate this user's server
-
-        This runs after __init__, so we can override it with saved unit name
-        if needed. This is useful primarily when you change the unit name template
-        between restarts.
-
-        JupyterHub before 0.7 also assumed your notebook was dead if it
-        saved no state, so this helps with that too!
-        """
-        if "unit_name" in state:
-            self.unit_name = state["unit_name"]
-        if "escaped_name" in state:
-            self.escaped_name = state["escaped_name"]
-        if "unit_secrets_path" in state:
-            self.unit_secrets_path = Path(state["unit_secrets_path"])
-
     def _ensure_spawnerconf_directory(self):
         """
         Ensure that the directory we write environment files to exists.
