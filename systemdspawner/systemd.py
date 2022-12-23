@@ -80,6 +80,7 @@ async def start_transient_service(
     run_cmd = [
         'systemd-run',
         '--unit', unit_name,
+        '-p', 'OOMPolicy=continue',
     ]
 
     if properties is None:
