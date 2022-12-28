@@ -87,6 +87,10 @@ async def start_transient_service(
     else:
         properties = properties.copy()
 
+    # Set default policy so OOM only terminate the offending kernel and let the user session survive.
+    # Can be overridden in unit_extra_properties.
+    properties.setdefault('OOMPolicy', 'continue')
+        
     # ensure there is a runtime directory where we can put our env file
     # If already set, can be space-separated list of paths
     runtime_directories = properties.setdefault("RuntimeDirectory", unit_name).split()
