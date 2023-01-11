@@ -3,7 +3,9 @@ import pwd
 import subprocess
 from traitlets import Bool, Unicode, List, Dict
 import asyncio
+import string
 
+import escapism
 from systemdspawner import systemd
 
 from jupyterhub.spawner import Spawner
@@ -53,11 +55,11 @@ class SystemdSpawner(Spawner):
     ).tag(config=True)
 
     unit_name_template = Unicode(
-        'jupyter-{USERNAME}-singleuser',
+        'jupyter-{USERNAME}-singleuser-{SERVERNAME}',
         help="""
         Template to use to make the systemd service names.
 
-        {USERNAME} and {USERID} are expanded}
+        {USERNAME}, {SERVERNAME}, and {USERID} are expanded}
         """
     ).tag(config=True)
 
@@ -147,6 +149,24 @@ class SystemdSpawner(Spawner):
         """
     ).tag(config=True)
 
+    unit_trailing_character = Unicode(
+        '-',
+        help="""
+        When using a unit that ends in a SERVERNAME strip this character from the end of the parsed string. 
+        """
+    ).tag(config=True)
+
+    escape_char = Unicode(
+        ':',
+        help="""
+        The character to change invalid safe characters to.
+        """
+    ).tag(config=True)
+
+    # Characters that are safe for systemd units.
+    safe_chars = set(string.ascii_lowercase + string.digits + string.ascii_uppercase + ':-_.\\')
+    max_unit_length = 248
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # All traitlets configurables are configured by now
@@ -154,18 +174,30 @@ class SystemdSpawner(Spawner):
 
         self.log.debug('user:%s Initialized spawner with unit %s', self.user.name, self.unit_name)
 
-    def _expand_user_vars(self, string):
+    def _escape_variable(self, in_string):
+        """
+        Escape variables for systemd unit naming
+        """
+        if len(in_string) > self.max_unit_length:
+            self.log.warning(f'String is longer than {self.max_unit_length}')
+        # Slice the string to the max unit length
+        return escapism.escape(in_string[:self.max_unit_length], safe=self.safe_chars, escape_char=self.escape_char)
+
+    def _expand_user_vars(self, in_string):
         """
         Expand user related variables in a given string
 
         Currently expands:
           {USERNAME} -> Name of the user
           {USERID} -> UserID
+          {SERVERNAME} -> Name of the server (self.name)
         """
-        return string.format(
+        # Strip the trailing - if we don't have a name.
+        return self._escape_variable(in_string.format(
             USERNAME=self.user.name,
-            USERID=self.user.id
-        )
+            USERID=self.user.id,
+            SERVERNAME=self.name
+        )).rstrip(self.unit_trailing_character)
 
     def get_state(self):
         """
@@ -205,7 +237,8 @@ class SystemdSpawner(Spawner):
         # from earlier. Regardless, we kill it and start ours in its place.
         # FIXME: Carefully look at this when doing a security sweep.
         if await systemd.service_running(self.unit_name):
-            self.log.info('user:%s Unit %s already exists but not known to JupyterHub. Killing', self.user.name, self.unit_name)
+            self.log.info('user:%s Unit %s already exists but not known to JupyterHub. Killing', self.user.name,
+                          self.unit_name)
             await systemd.stop_service(self.unit_name)
             if await systemd.service_running(self.unit_name):
                 self.log.error('user:%s Could not stop already existing unit %s', self.user.name, self.unit_name)
