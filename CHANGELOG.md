@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.17
+
+- Don't kill whole server when a single process OOMs,
+  thanks to [@dragz](https://github.com/dragz) - [PR #101](https://github.com/jupyterhub/systemdspawner/pull/101)
+
 ## v0.16
 
 - User variables (like `{USERNAME}`) are expanded in `unit_extra_parameters`,
