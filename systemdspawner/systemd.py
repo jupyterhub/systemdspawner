@@ -78,6 +78,7 @@ async def start_transient_service(
     """
 
     run_cmd = [
+        'sudo',
         'systemd-run',
         '--unit', unit_name,
     ]
@@ -151,6 +152,7 @@ async def service_running(unit_name):
     Return true if service with given name is running (active).
     """
     proc = await asyncio.create_subprocess_exec(
+        'sudo',
         'systemctl',
         'is-active',
         unit_name,
@@ -167,6 +169,7 @@ async def service_failed(unit_name):
     Return true if service with given name is in a failed state.
     """
     proc = await asyncio.create_subprocess_exec(
+        'sudo',
         'systemctl',
         'is-failed',
         unit_name,
@@ -185,6 +188,7 @@ async def stop_service(unit_name):
     Throws CalledProcessError if stopping fails
     """
     proc = await asyncio.create_subprocess_exec(
+        'sudo',
         'systemctl',
         'stop',
         unit_name
@@ -199,6 +203,7 @@ async def reset_service(unit_name):
     Throws CalledProcessError if resetting fails
     """
     proc = await asyncio.create_subprocess_exec(
+        'sudo',
         'systemctl',
         'reset-failed',
         unit_name
