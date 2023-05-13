@@ -166,7 +166,7 @@ async def test_properties_string():
         await systemd.start_transient_service(
             unit_name,
             ['/bin/bash'],
-            ['-c', 'pwd > pwd'.format(d)],
+            ['-c', 'pwd > pwd'],
             working_dir='/bind-test',
             properties={
                 'BindPaths': '{}:/bind-test'.format(d)
