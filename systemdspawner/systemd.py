@@ -16,6 +16,7 @@ env_pat = re.compile("[A-Za-z_]+")
 
 RUN_ROOT = "/run"
 
+
 def ensure_environment_directory(environment_file_directory):
     """Ensure directory for environment files exists and is private"""
     # ensure directory exists
@@ -78,8 +79,9 @@ async def start_transient_service(
     """
 
     run_cmd = [
-        'systemd-run',
-        '--unit', unit_name,
+        "systemd-run",
+        "--unit",
+        unit_name,
     ]
 
     if properties is None:
@@ -89,8 +91,8 @@ async def start_transient_service(
 
     # Set default policy so OOM only terminate the offending kernel and let the user session survive.
     # Can be overridden in unit_extra_properties.
-    properties.setdefault('OOMPolicy', 'continue')
-        
+    properties.setdefault("OOMPolicy", "continue")
+
     # ensure there is a runtime directory where we can put our env file
     # If already set, can be space-separated list of paths
     runtime_directories = properties.setdefault("RuntimeDirectory", unit_name).split()
@@ -107,10 +109,10 @@ async def start_transient_service(
     if properties:
         for key, value in properties.items():
             if isinstance(value, list):
-                run_cmd += ['--property={}={}'.format(key, v) for v in value]
+                run_cmd += [f"--property={key}={v}" for v in value]
             else:
                 # A string!
-                run_cmd.append('--property={}={}'.format(key, value))
+                run_cmd.append(f"--property={key}={value}")
 
     if environment_variables:
         environment_file = make_environment_file(
@@ -120,25 +122,25 @@ async def start_transient_service(
 
     # Explicitly check if uid / gid are not None, since 0 is valid value for both
     if uid is not None:
-        run_cmd += ['--uid', str(uid)]
+        run_cmd += ["--uid", str(uid)]
 
     if gid is not None:
-        run_cmd += ['--gid', str(gid)]
+        run_cmd += ["--gid", str(gid)]
 
     if slice is not None:
-        run_cmd += ['--slice={}'.format(slice)]
+        run_cmd += [f"--slice={slice}"]
 
     # We unfortunately have to resort to doing cd with bash, since WorkingDirectory property
     # of systemd units can't be set for transient units via systemd-run until systemd v227.
     # Centos 7 has systemd 219, and will probably never upgrade - so we need to support them.
     run_cmd += [
-        '/bin/bash',
-        '-c',
+        "/bin/bash",
+        "-c",
         "cd {wd} && exec {cmd} {args}".format(
             wd=shlex.quote(working_dir),
-            cmd=' '.join([shlex.quote(c) for c in cmd]),
-            args=' '.join([shlex.quote(a) for a in args])
-        )
+            cmd=" ".join([shlex.quote(c) for c in cmd]),
+            args=" ".join([shlex.quote(a) for a in args]),
+        ),
     ]
 
     proc = await asyncio.create_subprocess_exec(*run_cmd)
@@ -151,11 +153,11 @@ async def service_running(unit_name):
     Return true if service with given name is running (active).
     """
     proc = await asyncio.create_subprocess_exec(
-        'systemctl',
-        'is-active',
+        "systemctl",
+        "is-active",
         unit_name,
         # hide stdout, but don't capture stderr at all
-        stdout=asyncio.subprocess.DEVNULL
+        stdout=asyncio.subprocess.DEVNULL,
     )
     ret = await proc.wait()
 
@@ -167,11 +169,11 @@ async def service_failed(unit_name):
     Return true if service with given name is in a failed state.
     """
     proc = await asyncio.create_subprocess_exec(
-        'systemctl',
-        'is-failed',
+        "systemctl",
+        "is-failed",
         unit_name,
         # hide stdout, but don't capture stderr at all
-        stdout=asyncio.subprocess.DEVNULL
+        stdout=asyncio.subprocess.DEVNULL,
     )
     ret = await proc.wait()
 
@@ -184,11 +186,7 @@ async def stop_service(unit_name):
 
     Throws CalledProcessError if stopping fails
     """
-    proc = await asyncio.create_subprocess_exec(
-        'systemctl',
-        'stop',
-        unit_name
-    )
+    proc = await asyncio.create_subprocess_exec("systemctl", "stop", unit_name)
     await proc.wait()
 
 
@@ -198,9 +196,5 @@ async def reset_service(unit_name):
 
     Throws CalledProcessError if resetting fails
     """
-    proc = await asyncio.create_subprocess_exec(
-        'systemctl',
-        'reset-failed',
-        unit_name
-    )
+    proc = await asyncio.create_subprocess_exec("systemctl", "reset-failed", unit_name)
     await proc.wait()

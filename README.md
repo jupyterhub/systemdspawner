@@ -6,12 +6,12 @@
 **[License](#license)** |
 **[Resources](#resources)**
 
-# systemdspawner #
+# systemdspawner
 
 The **systemdspawner** enables JupyterHub to spawn single-user
 notebook servers using [systemd](https://www.freedesktop.org/wiki/Software/systemd/).
 
-## Features ##
+## Features
 
 If you want to use Linux Containers (Docker, rkt, etc) for isolation and
 security benefits, but don't want the headache and complexity of
@@ -70,9 +70,9 @@ The following features are currently available:
 10. Dynamically allocate users with Systemd's [dynamic users](http://0pointer.net/blog/dynamic-users-with-systemd.html)
     facility. Very useful in conjunction with [tmpauthenticator](https://github.com/jupyterhub/tmpauthenticator).
 
-## Requirements ##
+## Requirements
 
-### Systemd ###
+### Systemd
 
 Systemd Spawner requires you to use a Linux Distro that ships with at least
 systemd v211. The security related features require systemd v228 or v227. We recommend running
@@ -83,21 +83,21 @@ $ systemctl --version | head -1
 systemd 231
 ```
 
-### Kernel Configuration ###
+### Kernel Configuration
 
 Certain kernel options need to be enabled for the CPU / Memory limiting features
 to work. If these are not enabled, CPU / Memory limiting will just fail
 silently. You can check if your kernel supports these features by running
 the [`check-kernel.bash`](check-kernel.bash) script.
 
-### Root access ###
+### Root access
 
 Currently, JupyterHub must be run as root to use Systemd Spawner. `systemd-run`
 needs to be run as root to be able to set memory & cpu limits. Simple sudo rules
 do not help, since unrestricted access to `systemd-run` is equivalent to root. We
 will explore hardening approaches soon.
 
-### Local Users ###
+### Local Users
 
 If running with `c.SystemdSpawner.dynamic_users = False` (the default), each user's
 server is spawned to run as a local unix user account. Hence this spawner
@@ -109,28 +109,27 @@ are required. Systemd will automatically create dynamic users as required.
 See [this blog post](http://0pointer.net/blog/dynamic-users-with-systemd.html) for
 details.
 
-### Linux Distro compatibility ##
+### Linux Distro compatibility
 
-#### Ubuntu 16.04 LTS ###
+#### Ubuntu 16.04 LTS
 
 We recommend running this with systemd spawner. The default kernel has all the features
 we need, and a recent enough version of systemd to give us all the features.
 
-#### Debian Jessie ####
+#### Debian Jessie
 
 The systemd version that ships by default with Jessie doesn't provide all the features
 we need, and the default kernel doesn't ship with the features we need. However, if
 you [enable jessie-backports](https://backports.debian.org/Instructions/) you can
 install a new enough version of systemd and linux kernel to get it to work fine.
 
-#### Centos 7 ####
+#### Centos 7
 
 The kernel has all the features we need, but the version of systemd (219) is too old
 for the security related features of systemdspawner. However, basic spawning,
 memory & cpu limiting will work.
 
-
-## Installation ##
+## Installation
 
 You can install it from PyPI with:
 
@@ -149,8 +148,7 @@ Note that to confirm systemdspawner has been installed in the correct jupyterhub
 environment, a newly generated config file should list `systemdspawner` as one of the
 available spawner classes in the comments above the configuration line.
 
-
-## Configuration ##
+## Configuration
 
 Lots of configuration options for you to choose! You should put all of these
 in your `jupyterhub_config.py` file:
@@ -170,11 +168,11 @@ in your `jupyterhub_config.py` file:
 - **[`readwrite_paths`](#readwrite_paths)**
 - **[`dynamic_users`](#dynamic_users)**
 
-### `mem_limit` ###
+### `mem_limit`
 
 Specifies the maximum memory that can be used by each individual user. It can be
 specified as an absolute byte value. You can use the suffixes `K`, `M`, `G` or `T` to
-mean Kilobyte, Megabyte, Gigabyte or Terabyte respectively.  Setting it to `None` disables
+mean Kilobyte, Megabyte, Gigabyte or Terabyte respectively. Setting it to `None` disables
 memory limits.
 
 Even if you want individual users to use as much memory as possible, it is still good
@@ -190,7 +188,7 @@ Defaults to `None`, which provides no memory limits.
 This info is exposed to the single-user server as the environment variable
 `MEM_LIMIT` as integer bytes.
 
-### `cpu_limit` ###
+### `cpu_limit`
 
 A float representing the total CPU-cores each user can use. `1` represents one
 full CPU, `4` represents 4 full CPUs, `0.5` represents half of one CPU, etc.
@@ -211,7 +209,7 @@ Note: there is [a bug](https://github.com/systemd/systemd/issues/3851) in
 systemd v231 which prevents the CPU limit from being set to a value greater
 than 100%.
 
-#### CPU fairness ####
+#### CPU fairness
 
 Completely unrelated to `cpu_limit` is the concept of CPU fairness - that each
 user should have equal access to all the CPUs in the absense of limits. This
@@ -228,7 +226,7 @@ This works out perfect for most cases, since this allows users to burst up and
 use all CPU when nobody else is using CPU & forces them to automatically yield
 when other users want to use the CPU.
 
-### `user_workingdir` ###
+### `user_workingdir`
 
 The directory to spawn each user's notebook server in. This directory is what users
 see when they open their notebooks servers. Usually this is the user's home directory.
@@ -242,7 +240,7 @@ c.SystemdSpawner.user_workingdir = '/home/{USERNAME}'
 
 Defaults to the home directory of the user. Not respected if `dynamic_users` is true.
 
-### `username_template` ###
+### `username_template`
 
 Template for unix username each user should be spawned as.
 
@@ -257,7 +255,7 @@ c.SystemdSpawner.username_template = 'jupyter-{USERNAME}'
 
 Not respected if `dynamic_users` is set to True
 
-### `default_shell` ###
+### `default_shell`
 
 The default shell to use for the terminal in the notebook. Sets the `SHELL` environment
 variable to this.
@@ -265,10 +263,11 @@ variable to this.
 ```python
 c.SystemdSpawner.default_shell = '/bin/bash'
 ```
+
 Defaults to whatever the value of the `SHELL` environment variable is in the JupyterHub
 process, or `/bin/bash` if `SHELL` isn't set.
 
-### `extra_paths` ###
+### `extra_paths`
 
 List of paths that should be prepended to the `PATH` environment variable for the spawned
 notebook server. This is easier than setting the `env` property, since you want to
@@ -284,7 +283,7 @@ appropriate values for the user being spawned.
 
 Defaults to `[]` which doesn't add any extra paths to `PATH`
 
-### `unit_name_template` ###
+### `unit_name_template`
 
 Template to form the Systemd Service unit name for each user notebook server. This
 allows differentiating between multiple jupyterhubs with Systemd Spawner on the same
@@ -299,11 +298,14 @@ appropriate values for the user being spawned.
 
 Defaults to `jupyter-{USERNAME}-singleuser`
 
-### `unit_extra_properties` ###
+### `unit_extra_properties`
+
 Dict of key-value pairs used to add arbitrary properties to the spawned Jupyerhub units.
+
 ```python
 c.SystemdSpawner.unit_extra_properties = {'LimitNOFILE': '16384'}
 ```
+
 Read `man systemd-run` for details on per-unit properties available in transient units.
 
 `{USERNAME}` and `{USERID}` in each parameter value will be expanded to the
@@ -311,7 +313,7 @@ appropriate values for the user being spawned.
 
 Defaults to `{}` which doesn't add any extra properties to the transient scope.
 
-### `isolate_tmp` ###
+### `isolate_tmp`
 
 Setting this to true provides a separate, private `/tmp` for each user. This is very
 useful to protect against accidental leakage of otherwise private information - it is
@@ -327,7 +329,7 @@ Defaults to false.
 This requires systemd version > 227. If you enable this in earlier versions, spawning will
 fail.
 
-### `isolate_devices` ###
+### `isolate_devices`
 
 Setting this to true provides a separate, private `/dev` for each user. This prevents the
 user from directly accessing hardware devices, which could be a potential source of
@@ -343,7 +345,7 @@ Defaults to false.
 This requires systemd version > 227. If you enable this in earlier versions, spawning will
 fail.
 
-### `disable_user_sudo` ###
+### `disable_user_sudo`
 
 Setting this to true prevents users from being able to use `sudo` (or any other means) to
 become other users (including root). This helps contain damage from a compromise of a user's
@@ -359,7 +361,7 @@ Defaults to false.
 This requires systemd version > 228. If you enable this in earlier versions, spawning will
 fail.
 
-### `readonly_paths` ###
+### `readonly_paths`
 
 List of filesystem paths that should be mounted readonly for the users' notebook server. This
 will override any filesystem permissions that might exist. Subpaths of paths that are mounted
@@ -379,11 +381,11 @@ Defaults to `None` which disables this feature.
 This requires systemd version > 228. If you enable this in earlier versions, spawning will
 fail. It can also contain only directories (not files) until systemd version 231.
 
-### `readwrite_paths` ###
+### `readwrite_paths`
 
 List of filesystem paths that should be mounted readwrite for the users' notebook server. This
 only makes sense if `readonly_paths` is used to make some paths readonly - this can then be
-used to make specific paths readwrite. This does *not* override filesystem permissions - the
+used to make specific paths readwrite. This does _not_ override filesystem permissions - the
 user needs to have appropriate rights to write to these paths.
 
 ```python
@@ -398,7 +400,7 @@ Defaults to `None` which disables this feature.
 This requires systemd version > 228. If you enable this in earlier versions, spawning will
 fail. It can also contain only directories (not files) until systemd version 231.
 
-### `dynamic_users` ###
+### `dynamic_users`
 
 Allocate system users dynamically for each user.
 
@@ -412,10 +414,10 @@ information.
 
 Requires systemd 235.
 
-### `slice` ###
+### `slice`
 
-Run the spawned notebook in a given systemd slice.  This allows aggregate configuration that
-will apply to all the units that are launched.  This can be used (for example) to control
+Run the spawned notebook in a given systemd slice. This allows aggregate configuration that
+will apply to all the units that are launched. This can be used (for example) to control
 the total amount of memory that all of the notebook users can use.
 
 See https://samthursfield.wordpress.com/2015/05/07/running-firefox-in-a-cgroup-using-systemd/ for
@@ -423,12 +425,12 @@ an example of how this could look.
 
 For detailed configuration see the [manpage](http://man7.org/linux/man-pages/man5/systemd.slice.5.html)
 
-## Getting help ##
+## Getting help
 
 We encourage you to ask questions on the [mailing list](https://groups.google.com/forum/#!forum/jupyter).
 You can also participate in development discussions or get live help on [Gitter](https://gitter.im/jupyterhub/jupyterhub).
 
-## License ##
+## License
 
 We use a shared copyright model that enables all contributors to maintain the
 copyright on their contributions.
