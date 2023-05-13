@@ -1,6 +1,5 @@
 import os
 import pwd
-import subprocess
 from traitlets import Bool, Unicode, List, Dict
 import asyncio
 
