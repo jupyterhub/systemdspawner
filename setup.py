@@ -9,11 +9,11 @@ setup(
     description="JupyterHub Spawner using systemd for resource isolation",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url='https://github.com/jupyterhub/systemdspawner',
-    author='Yuvi Panda',
-    author_email='yuvipanda@gmail.com',
-    license='3 Clause BSD',
-    packages=['systemdspawner'],
+    url="https://github.com/jupyterhub/systemdspawner",
+    author="Yuvi Panda",
+    author_email="yuvipanda@gmail.com",
+    license="3 Clause BSD",
+    packages=["systemdspawner"],
     entry_points={
         "jupyterhub.spawners": [
             "systemd = systemdspawner:SystemdSpawner",
