@@ -8,6 +8,13 @@
 
 # systemdspawner
 
+[![Latest PyPI version](https://img.shields.io/pypi/v/jupyterhub-systemdspawner?logo=pypi)](https://pypi.python.org/pypi/jupyterhub-systemdspawner)
+[![Latest conda-forge version](https://img.shields.io/conda/vn/conda-forge/jupyterhub-systemdspawner?logo=conda-forge)](https://anaconda.org/conda-forge/jupyterhub-systemdspawner)
+[![GitHub Workflow Status - Test](https://img.shields.io/github/actions/workflow/status/jupyterhub/systemdspawner/test.yaml?logo=github&label=tests)](https://github.com/jupyterhub/systemdspawner/actions)
+[![Test coverage of code](https://codecov.io/gh/jupyterhub/systemdspawner/branch/main/graph/badge.svg)](https://codecov.io/gh/jupyterhub/systemdspawner)
+[![GitHub](https://img.shields.io/badge/issue_tracking-github-blue?logo=github)](https://github.com/jupyterhub/systemdspawner/issues)
+[![Discourse](https://img.shields.io/badge/help_forum-discourse-blue?logo=discourse)](https://discourse.jupyter.org/c/jupyterhub)
+
 The **systemdspawner** enables JupyterHub to spawn single-user
 notebook servers using [systemd](https://www.freedesktop.org/wiki/Software/systemd/).
 
