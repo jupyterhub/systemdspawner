@@ -20,8 +20,9 @@ setup(
             "systemdspawner = systemdspawner:SystemdSpawner",
         ],
     },
+    python_requires=">=3.8",
     install_requires=[
-        "jupyterhub>=0.9",
+        "jupyterhub>=2.3.0",
         "tornado>=5.0",
     ],
 )
