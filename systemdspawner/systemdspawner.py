@@ -77,7 +77,7 @@ class SystemdSpawner(Spawner):
     ).tag(config=True)
 
     disable_user_sudo = Bool(
-        False,
+        True,
         help="""
         Set to true to disallow becoming root (or any other user) via sudo or other means from inside the notebook
         """,
