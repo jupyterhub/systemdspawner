@@ -1,0 +1,71 @@
+# This is a GitHub workflow defining a set of jobs with a set of steps.
+# ref: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
+#
+name: Tests
+
+on:
+  pull_request:
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+      - ".github/workflows/*.yaml"
+      - "!.github/workflows/test.yaml"
+  push:
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+      - ".github/workflows/*.yaml"
+      - "!.github/workflows/test.yaml"
+    branches-ignore:
+      - "dependabot/**"
+      - "pre-commit-ci-update-config"
+    tags: ["**"]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # oldest supported python and jupyterhub version
+          - python-version: "3.8"
+            pip-install-spec: "jupyterhub==2.3.0 tornado==5.0.0 sqlalchemy==1.*"
+          - python-version: "3.9"
+            pip-install-spec: "jupyterhub==2.* sqlalchemy==1.*"
+          - python-version: "3.10"
+            pip-install-spec: "jupyterhub==3.*"
+          - python-version: "3.11"
+            pip-install-spec: "jupyterhub==4.*"
+
+          # latest version of python and jupyterhub (including pre-releases)
+          - python-version: "3.x"
+            pip-install-spec: "--pre jupyterhub"
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "${{ matrix.python-version }}"
+
+      - name: Install Node dependencies
+        run: |
+          npm install -g configurable-http-proxy
+
+      - name: Install Python dependencies
+        run: |
+          pip install ${{ matrix.pip-install-spec }}
+          pip install ".[test]"
+          pip freeze
+
+      - name: Run tests
+        run: |
+          pytest --cov=systemdspawner
+
+      # GitHub action reference: https://github.com/codecov/codecov-action
+      - uses: codecov/codecov-action@v3

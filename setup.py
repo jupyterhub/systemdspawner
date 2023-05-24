@@ -25,4 +25,11 @@ setup(
         "jupyterhub>=2.3.0",
         "tornado>=5.0",
     ],
+    extras_require={
+        "test": [
+            "pytest",
+            "pytest-asyncio",
+            "pytest-cov",
+        ],
+    },
 )
