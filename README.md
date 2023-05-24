@@ -2,6 +2,7 @@
 **[Requirements](#requirements)** |
 **[Installation](#installation)** |
 **[Configuration](#configuration)** |
+**[Getting help](#getting-help)** |
 **[License](#license)**
 
 # systemdspawner
@@ -429,6 +430,10 @@ See https://samthursfield.wordpress.com/2015/05/07/running-firefox-in-a-cgroup-u
 an example of how this could look.
 
 For detailed configuration see the [manpage](http://man7.org/linux/man-pages/man5/systemd.slice.5.html)
+
+## Getting help
+
+We encourage you to ask questions in the [Jupyter Discourse forum](https://discourse.jupyter.org/c/jupyterhub).
 
 ## License
 
