@@ -1,35 +1,35 @@
 # Changelog
 
-## v0.17
+## v0.17 - 2023-01-10
 
 - Don't kill whole server when a single process OOMs,
   thanks to [@dragz](https://github.com/dragz) - [PR #101](https://github.com/jupyterhub/systemdspawner/pull/101)
 
-## v0.16
+## v0.16 - 2022-04-22
 
 - User variables (like `{USERNAME}`) are expanded in `unit_extra_parameters`,
   thanks to [@tullis](https://github.com/tullis) - [PR #83](https://github.com/jupyterhub/systemdspawner/pull/83)
 - Some cleanup of packaging metadata, thanks to [@minrk](https://github.com/minrk) -
   [PR #75](https://github.com/jupyterhub/systemdspawner/pull/75)
 
-## v0.15
+## v0.15 - 2020-12-07
 
 Fixes vulnerability [GHSA-cg54-gpgr-4rm6](https://github.com/jupyterhub/systemdspawner/security/advisories/GHSA-cg54-gpgr-4rm6) affecting all previous releases.
 
 - Use EnvironmentFile to pass environment variables to units.
 
-## v0.14
+## v0.14 - 2020-07-20
 
 - define entrypoints for JupyterHub spawner configuration
 - Fixes for CentOS 7
 
-## v0.13
+## v0.13 - 2019-04-28
 
 ### Bug Fixes
 
 - Fix `slice` support by making it a configurable option
 
-## v0.12
+## v0.12 - 2019-04-17
 
 ### New Features
 
@@ -44,7 +44,7 @@ Fixes vulnerability [GHSA-cg54-gpgr-4rm6](https://github.com/jupyterhub/systemds
 - Fix bug in cleaning up services from a previously running
   JupyterHub. [thanks to [@minrk](https://github.com/minrk)]
 
-## v0.11
+## v0.11 - 2018-07-12
 
 ### New Features
 
@@ -56,7 +56,7 @@ Fixes vulnerability [GHSA-cg54-gpgr-4rm6](https://github.com/jupyterhub/systemds
 - Users' home directories now properly read from pwd database, rather than assumed to be under `/home`.
   Thanks to [@cpainterwakefield](https://github.com/cpainterwakefield) for reporting & suggested PR!
 
-## v0.10
+## v0.10 - 2018-07-11
 
 ### Breaking changes
 
