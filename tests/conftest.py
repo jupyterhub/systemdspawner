@@ -52,5 +52,6 @@ async def systemdspawner_config():
     """
     config = Config()
     config.JupyterHub.spawner_class = "systemd"
+    config.JupyterHub.cookie_secret = "abc123"
 
     return config
