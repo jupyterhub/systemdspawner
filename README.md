@@ -147,7 +147,7 @@ You can enable it for your jupyterhub with the following lines in your
 `jupyterhub_config.py` file
 
 ```python
-c.JupyterHub.spawner_class = 'systemdspawner.SystemdSpawner'
+c.JupyterHub.spawner_class = "systemd"
 ```
 
 Note that to confirm systemdspawner has been installed in the correct jupyterhub

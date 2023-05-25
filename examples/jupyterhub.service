@@ -1,3 +1,10 @@
+# This is a systemd unit file describing a how to start a jupyterhub, provided
+# as an example.
+#
+# systemd ref:   https://www.freedesktop.org/wiki/Software/systemd/
+# unit file ref: https://www.freedesktop.org/software/systemd/man/systemd.unit.html
+# syntax ref:    https://www.freedesktop.org/software/systemd/man/systemd.syntax.html
+#
 [Service]
 ExecStart=/usr/local/bin/jupyterhub --no-ssl --config /etc/local/jupyterhub/jupyterhub_config.py
 ReadOnlyDirectories=/
