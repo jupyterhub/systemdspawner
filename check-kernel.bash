@@ -1,7 +1,11 @@
 #!/bin/bash
-
+#
+# SystemdSpawner's config cpu_limit and mem_limit needs certain linux kernel
+# options enabled, otherwise they will fail silently. Running this script checks
+# if they are.
+#
 # Partially stolen from https://github.com/docker/docker/blob/master/contrib/check-config.sh
-
+#
 possibleConfigs=(
     '/proc/config.gz'
     "/boot/config-$(uname -r)"
