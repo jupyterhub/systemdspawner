@@ -1,5 +1,44 @@
 # Changelog
 
+## v1.0
+
+### v1.0.0
+
+#### Breaking changes
+
+- Systemd v243+ is now required, and v245+ is recommended. Systemd v245 is
+  available in for example Ubuntu 20.04+, Debian 11+, and Rocky/CentOS 9+.
+- Python 3.8+, JupyterHub 2.3.0+, and Tornado 5.1+ is now required.
+- `SystemdSpawner.disable_user_sudo` (influences systemd's `NoNewPrivileges`)
+  now defaults to `True`, making the installation more secure by default.
+
+#### Maintenance and upkeep improvements
+
+- Add MANIFEST.in to bundle LICENSE in source distribution [#122](https://github.com/jupyterhub/systemdspawner/pull/122) ([@consideRatio](https://github.com/consideRatio))
+- Add basic start/stop test against a jupyterhub [#120](https://github.com/jupyterhub/systemdspawner/pull/120) ([@consideRatio](https://github.com/consideRatio))
+- refactor: remove no longer needed pytest.mark.asyncio [#119](https://github.com/jupyterhub/systemdspawner/pull/119) ([@consideRatio](https://github.com/consideRatio))
+- Require systemd v243+, recommend systemd v245+, test against systemd v245 [#117](https://github.com/jupyterhub/systemdspawner/pull/117) ([@consideRatio](https://github.com/consideRatio))
+- Add test and release automation [#115](https://github.com/jupyterhub/systemdspawner/pull/115) ([@consideRatio](https://github.com/consideRatio))
+- maint, breaking: require python 3.8+, jupyterhub 2.3.0+, tornado 5.1+ [#114](https://github.com/jupyterhub/systemdspawner/pull/114) ([@consideRatio](https://github.com/consideRatio))
+- Add pre-commit for automated formatting [#108](https://github.com/jupyterhub/systemdspawner/pull/108) ([@consideRatio](https://github.com/consideRatio))
+- Disable user sudo by default [#91](https://github.com/jupyterhub/systemdspawner/pull/91) ([@yuvipanda](https://github.com/yuvipanda))
+
+#### Documentation improvements
+
+- docs: add some explanatory notes in files, and small details [#118](https://github.com/jupyterhub/systemdspawner/pull/118) ([@consideRatio](https://github.com/consideRatio))
+- readme: add badges for releases/tests/coverage/issues/discourse [#112](https://github.com/jupyterhub/systemdspawner/pull/112) ([@consideRatio](https://github.com/consideRatio))
+- readme: remove resources section and link to discourse forum instead of mailing list [#111](https://github.com/jupyterhub/systemdspawner/pull/111) ([@consideRatio](https://github.com/consideRatio))
+
+#### Continuous integration improvements
+
+- ci: add dependabot to bump future github actions [#113](https://github.com/jupyterhub/systemdspawner/pull/113) ([@consideRatio](https://github.com/consideRatio))
+
+#### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterhub/systemdspawner/graphs/contributors?from=2023-01-11&to=2023-05-25&type=c))
+
+[@behrmann](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Abehrmann+updated%3A2023-01-11..2023-05-25&type=Issues) | [@consideRatio](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3AconsideRatio+updated%3A2023-01-11..2023-05-25&type=Issues) | [@manics](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Amanics+updated%3A2023-01-11..2023-05-25&type=Issues) | [@yuvipanda](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Ayuvipanda+updated%3A2023-01-11..2023-05-25&type=Issues)
+
 ## v0.17 - 2023-01-10
 
 - Don't kill whole server when a single process OOMs,
