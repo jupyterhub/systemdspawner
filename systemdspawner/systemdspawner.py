@@ -1,12 +1,16 @@
 import asyncio
 import os
 import pwd
+import sys
 
 from jupyterhub.spawner import Spawner
 from jupyterhub.utils import random_port
 from traitlets import Bool, Dict, List, Unicode
 
 from systemdspawner import systemd
+
+SYSTEMD_REQUIRED_VERSION = 243
+SYSTEMD_LOWEST_RECOMMENDED_VERSION = 245
 
 
 class SystemdSpawner(Spawner):
@@ -60,8 +64,6 @@ class SystemdSpawner(Spawner):
         """,
     ).tag(config=True)
 
-    # FIXME: Do not allow enabling this for systemd versions < 227,
-    # since that is when it was introduced.
     isolate_tmp = Bool(
         False,
         help="""
@@ -131,8 +133,6 @@ class SystemdSpawner(Spawner):
 
         See http://0pointer.net/blog/dynamic-users-with-systemd.html for more
         information.
-
-        Requires systemd 235.
         """,
     ).tag(config=True)
 
@@ -154,6 +154,21 @@ class SystemdSpawner(Spawner):
         self.log.debug(
             "user:%s Initialized spawner with unit %s", self.user.name, self.unit_name
         )
+
+        systemd_version = systemd.get_systemd_version()
+        if systemd_version is None:
+            self.log.warning(
+                "Failed to parse systemd version from 'systemctl --version'"
+            )
+        elif systemd_version < SYSTEMD_REQUIRED_VERSION:
+            self.log.critical(
+                f"systemd version {SYSTEMD_REQUIRED_VERSION} or higher is required, version {systemd_version} is used"
+            )
+            sys.exit(1)
+        elif systemd_version < SYSTEMD_LOWEST_RECOMMENDED_VERSION:
+            self.log.warning(
+                f"systemd version {SYSTEMD_LOWEST_RECOMMENDED_VERSION} or higher is recommended, version {systemd_version} is used"
+            )
 
     def _expand_user_vars(self, string):
         """

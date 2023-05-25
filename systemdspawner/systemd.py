@@ -9,6 +9,7 @@ import asyncio
 import os
 import re
 import shlex
+import subprocess
 import warnings
 
 # light validation of environment variable keys
@@ -198,3 +199,20 @@ async def reset_service(unit_name):
     """
     proc = await asyncio.create_subprocess_exec("systemctl", "reset-failed", unit_name)
     await proc.wait()
+
+
+def get_systemd_version():
+    """
+    Returns systemd's major version, or None if failing to do so.
+    """
+    try:
+        version_response = subprocess.check_output(["systemctl", "--version"])
+        # Example response from Ubuntu 22.04:
+        #
+        # systemd 249 (249.11-0ubuntu3.9)
+        # +PAM +AUDIT +SELINUX +APPARMOR +IMA +SMACK +SECCOMP +GCRYPT +GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 -IDN +IPTC +KMOD +LIBCRYPTSETUP +LIBFDISK +PCRE2 -PWQUALITY -P11KIT -QRENCODE +BZIP2 +LZ4 +XZ +ZLIB +ZSTD -XKBCOMMON +UTMP +SYSVINIT default-hierarchy=unified
+        #
+        version = int(float(version_response.split()[1]))
+        return version
+    except:
+        return None
