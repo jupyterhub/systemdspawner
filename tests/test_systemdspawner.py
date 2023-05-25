@@ -57,7 +57,7 @@ def _get_systemdspawner_user_unit(username):
     }
 
 
-@pytest.mark.github_ci
+@pytest.mark.github_actions
 async def test_start_stop(hub_app, systemdspawner_config):
     """
     This tests starts the default user server, access its /api/status endpoint,

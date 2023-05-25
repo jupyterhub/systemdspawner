@@ -20,7 +20,7 @@ def pytest_configure(config):
     A pytest recognized function to adjust configuration before running tests.
     """
     config.addinivalue_line(
-        "markers", "github_ci: only to be run in a github ci environment"
+        "markers", "github_actions: only to be run in a github actions ci environment"
     )
 
     # These markers are registered to avoid warnings triggered by importing from
@@ -37,9 +37,11 @@ def pytest_runtest_setup(item):
     Several of these tests work against the host system directly, so to protect
     users from issues we make these not run.
     """
-    if not os.environ("GITHUB_CI"):
-        has_github_ci_mark = any(mark for mark in item.iter_markers(name="github_ci"))
-        if has_github_ci_mark:
+    if not os.environ.get("GITHUB_ACTIONS"):
+        has_github_actions_mark = any(
+            mark for mark in item.iter_markers(name="github_actions")
+        )
+        if has_github_actions_mark:
             pytest.skip("Skipping test marked safe only for GitHub's CI environment.")
 
 
