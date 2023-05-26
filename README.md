@@ -78,16 +78,18 @@ The following features are currently available:
 
 ## Requirements
 
-### Systemd
+### Systemd and Linux distributions
 
-Systemd Spawner requires you to use a Linux Distro that ships with at least
-systemd v211. The security related features require systemd v228 or v227. We recommend running
-with at least systemd v228. You can check which version of systemd is running with:
+SystemdSpawner 1 is recommended to be used with systemd version 245 or higher,
+but _may_ work with systemd version 243-244 as well. Below are examples of Linux
+distributions that use systemd and has a recommended version.
 
-```bash
-$ systemctl --version | head -1
-systemd 231
-```
+- Ubuntu 20.04+
+- Debian 11+
+- Rocky 9+ / CentOS 9+
+
+The command `systemctl --version` can be used to verify that systemd is used,
+and what version is used.
 
 ### Kernel Configuration
 
@@ -114,26 +116,6 @@ If running with `c.SystemdSpawner.dynamic_users = True`, no local user accounts
 are required. Systemd will automatically create dynamic users as required.
 See [this blog post](http://0pointer.net/blog/dynamic-users-with-systemd.html) for
 details.
-
-### Linux Distro compatibility
-
-#### Ubuntu 16.04 LTS
-
-We recommend running this with systemd spawner. The default kernel has all the features
-we need, and a recent enough version of systemd to give us all the features.
-
-#### Debian Jessie
-
-The systemd version that ships by default with Jessie doesn't provide all the features
-we need, and the default kernel doesn't ship with the features we need. However, if
-you [enable jessie-backports](https://backports.debian.org/Instructions/) you can
-install a new enough version of systemd and linux kernel to get it to work fine.
-
-#### Centos 7
-
-The kernel has all the features we need, but the version of systemd (219) is too old
-for the security related features of systemdspawner. However, basic spawning,
-memory & cpu limiting will work.
 
 ## Installation
 
@@ -332,9 +314,6 @@ c.SystemdSpawner.isolate_tmp = True
 
 Defaults to false.
 
-This requires systemd version > 227. If you enable this in earlier versions, spawning will
-fail.
-
 ### `isolate_devices`
 
 Setting this to true provides a separate, private `/dev` for each user. This prevents the
@@ -348,9 +327,6 @@ c.SystemdSpawner.isolate_devices = True
 
 Defaults to false.
 
-This requires systemd version > 227. If you enable this in earlier versions, spawning will
-fail.
-
 ### `disable_user_sudo`
 
 Setting this to true prevents users from being able to use `sudo` (or any other means) to
@@ -363,9 +339,6 @@ c.SystemdSpawner.disable_user_sudo = True
 ```
 
 Defaults to false.
-
-This requires systemd version > 228. If you enable this in earlier versions, spawning will
-fail.
 
 ### `readonly_paths`
 
@@ -384,9 +357,6 @@ appropriate values for the user being spawned.
 
 Defaults to `None` which disables this feature.
 
-This requires systemd version > 228. If you enable this in earlier versions, spawning will
-fail. It can also contain only directories (not files) until systemd version 231.
-
 ### `readwrite_paths`
 
 List of filesystem paths that should be mounted readwrite for the users' notebook server. This
@@ -403,9 +373,6 @@ appropriate values for the user being spawned.
 
 Defaults to `None` which disables this feature.
 
-This requires systemd version > 228. If you enable this in earlier versions, spawning will
-fail. It can also contain only directories (not files) until systemd version 231.
-
 ### `dynamic_users`
 
 Allocate system users dynamically for each user.
@@ -417,8 +384,6 @@ is deallocated whenever the user's server is not running.
 
 See http://0pointer.net/blog/dynamic-users-with-systemd.html for more
 information.
-
-Requires systemd 235.
 
 ### `slice`
 

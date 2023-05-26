@@ -24,8 +24,6 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04
-
     strategy:
       fail-fast: false
       matrix:
@@ -33,17 +31,23 @@ jobs:
           # oldest supported python and jupyterhub version
           - python-version: "3.8"
             pip-install-spec: "jupyterhub==2.3.0 tornado==5.1.0 sqlalchemy==1.*"
+            runs-on: ubuntu-20.04
           - python-version: "3.9"
             pip-install-spec: "jupyterhub==2.* sqlalchemy==1.*"
+            runs-on: ubuntu-22.04
           - python-version: "3.10"
             pip-install-spec: "jupyterhub==3.*"
+            runs-on: ubuntu-22.04
           - python-version: "3.11"
             pip-install-spec: "jupyterhub==4.*"
+            runs-on: ubuntu-22.04
 
           # latest version of python and jupyterhub (including pre-releases)
           - python-version: "3.x"
             pip-install-spec: "--pre jupyterhub"
+            runs-on: ubuntu-latest
 
+    runs-on: ${{ matrix.runs-on }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3

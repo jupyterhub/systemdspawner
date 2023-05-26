@@ -11,6 +11,17 @@ import time
 from systemdspawner import systemd
 
 
+def test_get_systemd_version():
+    """
+    Test getting systemd version as an integer, where the assumption for the
+    tests are that systemd is actually running at all.
+    """
+    systemd_version = systemd.get_systemd_version()
+    assert isinstance(
+        systemd_version, int
+    ), "Either systemd wasn't running, or we failed to parse the version into an integer!"
+
+
 async def test_simple_start():
     unit_name = "systemdspawner-unittest-" + str(time.time())
     await systemd.start_transient_service(
