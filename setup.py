@@ -18,6 +18,7 @@ setup(
         "jupyterhub.spawners": [
             "systemd = systemdspawner:SystemdSpawner",
             "systemdspawner = systemdspawner:SystemdSpawner",
+            "staticsystemdspawner = systemdspawner:StaticSystemdSpawner",
         ],
     },
     python_requires=">=3.8",
