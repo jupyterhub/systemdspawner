@@ -11,6 +11,10 @@ async def test_start_stop(hub_app, systemdspawner_config, pytestconfig):
     Starts a user server, verifies access to its /api/status endpoint, and stops
     the server.
 
+    This test is skipped unless pytest is passed --system-test-user=USERNAME.
+    The started user server process will run as the user in the user's home
+    folder, which perhaps is fine, but maybe not.
+
     About using the root and nobody user:
 
       - A jupyter server started as root will error without the user server being
@@ -20,7 +24,6 @@ async def test_start_stop(hub_app, systemdspawner_config, pytestconfig):
         user's home home directory, which for the nobody user is /nonexistent on
         ubunutu.
     """
-    # test is skipped unless pytest is run with --system-test-user=USERNAME
     username = pytestconfig.getoption("--system-test-user", skip=True)
     unit_name = f"jupyter-{username}-singleuser.service"
 
