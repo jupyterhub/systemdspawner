@@ -86,6 +86,7 @@ async def start_transient_service(
     run_cmd = [
         "systemd-run",
         f"--unit={unit_name}",
+        f"--working-directory={working_dir}",
     ]
     if uid is not None:
         run_cmd += [f"--uid={uid}"]
@@ -140,18 +141,8 @@ async def start_transient_service(
         )
         run_cmd.append(f"--property=EnvironmentFile={environment_file}")
 
-    # We unfortunately have to resort to doing cd with bash, since WorkingDirectory property
-    # of systemd units can't be set for transient units via systemd-run until systemd v227.
-    # Centos 7 has systemd 219, and will probably never upgrade - so we need to support them.
-    run_cmd += [
-        "/bin/bash",
-        "-c",
-        "cd {wd} && exec {cmd} {args}".format(
-            wd=shlex.quote(working_dir),
-            cmd=" ".join([shlex.quote(c) for c in cmd]),
-            args=" ".join([shlex.quote(a) for a in args]),
-        ),
-    ]
+    # Append typical Spawner "cmd" and "args" on how to start the user server
+    run_cmd += cmd + args
 
     proc = await asyncio.create_subprocess_exec(*run_cmd)
 
