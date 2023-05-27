@@ -8,8 +8,6 @@ import os
 import tempfile
 import time
 
-import pytest
-
 from systemdspawner import systemd
 
 
@@ -24,7 +22,6 @@ def test_get_systemd_version():
     ), "Either systemd wasn't running, or we failed to parse the version into an integer!"
 
 
-@pytest.mark.github_actions
 async def test_simple_start():
     unit_name = "systemdspawner-unittest-" + str(time.time())
     await systemd.start_transient_service(
@@ -38,7 +35,6 @@ async def test_simple_start():
     assert not await systemd.service_running(unit_name)
 
 
-@pytest.mark.github_actions
 async def test_service_failed_reset():
     """
     Test service_failed and reset_service
@@ -61,7 +57,6 @@ async def test_service_failed_reset():
     assert not await systemd.service_failed(unit_name)
 
 
-@pytest.mark.github_actions
 async def test_service_running_fail():
     """
     Test service_running failing when there's no service.
@@ -71,7 +66,6 @@ async def test_service_running_fail():
     assert not await systemd.service_running(unit_name)
 
 
-@pytest.mark.github_actions
 async def test_env_setting():
     unit_name = "systemdspawner-unittest-" + str(time.time())
     with tempfile.TemporaryDirectory() as d:
@@ -113,7 +107,6 @@ async def test_env_setting():
         assert not os.path.exists(env_file)
 
 
-@pytest.mark.github_actions
 async def test_workdir():
     unit_name = "systemdspawner-unittest-" + str(time.time())
     _, env_filename = tempfile.mkstemp()
@@ -133,7 +126,6 @@ async def test_workdir():
             assert text == d
 
 
-@pytest.mark.github_actions
 async def test_slice():
     unit_name = "systemdspawner-unittest-" + str(time.time())
     _, env_filename = tempfile.mkstemp()
@@ -159,7 +151,6 @@ async def test_slice():
         assert b"user.slice" in stdout
 
 
-@pytest.mark.github_actions
 async def test_properties_string():
     """
     Test that setting string properties works
@@ -189,7 +180,6 @@ async def test_properties_string():
             assert text == "/bind-test"
 
 
-@pytest.mark.github_actions
 async def test_properties_list():
     """
     Test setting multiple values for a property
@@ -226,7 +216,6 @@ async def test_properties_list():
             assert text == d
 
 
-@pytest.mark.github_actions
 async def test_uid_gid():
     """
     Test setting uid and gid

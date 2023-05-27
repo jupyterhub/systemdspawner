@@ -1,5 +1,3 @@
-import os
-
 import pytest
 from traitlets.config import Config
 
@@ -15,14 +13,31 @@ pytest_plugins = [
 ]
 
 
-def pytest_configure(config):
+def pytest_addoption(parser, pluginmanager):
     """
-    A pytest recognized function to adjust configuration before running tests.
+    A pytest hook to register argparse-style options and ini-style config
+    values.
+
+    We use it to declare command-line arguments.
+
+    ref: https://docs.pytest.org/en/stable/reference/reference.html#pytest.hookspec.pytest_addoption
+    ref: https://docs.pytest.org/en/stable/reference/reference.html#pytest.Parser.addoption
     """
-    config.addinivalue_line(
-        "markers", "github_actions: only to be run in a github actions ci environment"
+    parser.addoption(
+        "--system-test-user",
+        help="Test server spawning for this existing system user",
     )
 
+
+def pytest_configure(config):
+    """
+    A pytest hook to adjust configuration before running tests.
+
+    We use it to declare pytest marks.
+
+    ref: https://docs.pytest.org/en/stable/reference/reference.html#pytest.hookspec.pytest_configure
+    ref: https://docs.pytest.org/en/stable/reference/reference.html#pytest.Config
+    """
     # These markers are registered to avoid warnings triggered by importing from
     # jupyterhub.tests.test_api in test_systemspawner.py.
     config.addinivalue_line("markers", "role: dummy")
@@ -32,19 +47,6 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "services: dummy")
 
 
-def pytest_runtest_setup(item):
-    """
-    Several of these tests work against the host system directly, so to protect
-    users from issues we make these not run.
-    """
-    if not os.environ.get("GITHUB_ACTIONS"):
-        has_github_actions_mark = any(
-            mark for mark in item.iter_markers(name="github_actions")
-        )
-        if has_github_actions_mark:
-            pytest.skip("Skipping test marked safe only for GitHub's CI environment.")
-
-
 @pytest.fixture
 async def systemdspawner_config():
     """
@@ -52,6 +54,8 @@ async def systemdspawner_config():
     """
     config = Config()
     config.JupyterHub.spawner_class = "systemd"
+
+    # set cookie_secret to avoid having jupyterhub create a file
     config.JupyterHub.cookie_secret = "abc123"
 
     return config
