@@ -215,7 +215,7 @@ This works out perfect for most cases, since this allows users to burst up and
 use all CPU when nobody else is using CPU & forces them to automatically yield
 when other users want to use the CPU.
 
-The share of access can be adjusted with the `cpu_weight` option.
+The share of access each user gets can be adjusted with the `cpu_weight` option.
 
 ### `cpu_weight` ###
 
