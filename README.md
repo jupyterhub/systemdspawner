@@ -143,6 +143,7 @@ in your `jupyterhub_config.py` file:
 
 - **[`mem_limit`](#mem_limit)**
 - **[`cpu_limit`](#cpu_limit)**
+- **[`cpu_weight`](#cpu_weight)**
 - **[`user_workingdir`](#user_workingdir)**
 - **[`username_template`](#username_template)**
 - **[`default_shell`](#default_shell)**
@@ -213,6 +214,23 @@ of how many processes each user is running, they all get equal access to the CPU
 This works out perfect for most cases, since this allows users to burst up and
 use all CPU when nobody else is using CPU & forces them to automatically yield
 when other users want to use the CPU.
+
+The share of access can be adjusted with the `cpu_weight` option.
+
+### `cpu_weight` ###
+
+An integer representing the share of CPU time each user can use. A user with 
+a `cpu_weight` of 200 will get 2x access to the CPU than a user with a `cpu_weight`
+of 100, which is the system default.  
+
+```python
+c.SystemdSpawner.cpu_weight = 100
+```
+
+Defaults to `None`, which implicitly means 100.
+
+This info is exposed to the single-user server as the environment variable
+`CPU_WEIGHT` as an integer.
 
 ### `user_workingdir`
 

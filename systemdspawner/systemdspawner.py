@@ -5,7 +5,7 @@ import sys
 
 from jupyterhub.spawner import Spawner
 from jupyterhub.utils import random_port
-from traitlets import Bool, Dict, List, Unicode
+from traitlets import Bool, Dict, List, Unicode, Integer
 
 from systemdspawner import systemd
 
@@ -144,6 +144,18 @@ class SystemdSpawner(Spawner):
         This allow global configuration of the maximum resources that all users
         collectively can use by creating a a slice beforehand.
         """,
+    ).tag(config=True)
+
+    cpu_weight = Integer(
+        None,
+        allow_none=True,
+        help="""
+        Assign a CPU weight to the single-user notebook server.
+        Available CPU time is allocated in proportion to each user's weight.
+
+        Acceptable value: an integer between 1 to 10000. 
+        System default is 100.
+        """
     ).tag(config=True)
 
     def __init__(self, *args, **kwargs):
@@ -303,6 +315,11 @@ class SystemdSpawner(Spawner):
             #        otherwise this doesn't have any effect.
             properties["CPUAccounting"] = "yes"
             properties["CPUQuota"] = f"{int(self.cpu_limit * 100)}%"
+
+        if self.cpu_weight is not None:
+            # FIXME: Detect & use proper properties for v1 vs v2 cgroups
+            properties['CPUAccounting'] = 'yes'
+            properties['CPUWeight'] = str(self.cpu_weight)            
 
         if self.disable_user_sudo:
             properties["NoNewPrivileges"] = "yes"
