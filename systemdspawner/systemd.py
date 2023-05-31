@@ -76,73 +76,75 @@ async def start_transient_service(
     slice=None,
 ):
     """
-    Start a systemd transient service with given parameters
+    Start a systemd transient service using systemd-run with given command-line
+    options and systemd unit directives (properties).
+
+    systemd-run ref:             https://www.freedesktop.org/software/systemd/man/systemd-run.html
+    systemd unit directives ref: https://www.freedesktop.org/software/systemd/man/systemd.directives.html
     """
 
     run_cmd = [
         "systemd-run",
         "--unit",
         unit_name,
+        "--working-directory",
+        working_dir,
     ]
+    if uid is not None:
+        run_cmd += [f"--uid={uid}"]
+    if gid is not None:
+        run_cmd += [f"--gid={gid}"]
+    if slice:
+        run_cmd += [f"--slice={slice}"]
 
-    if properties is None:
-        properties = {}
-    else:
-        properties = properties.copy()
+    properties = (properties or {}).copy()
 
-    # Set default policy so OOM only terminate the offending kernel and let the user session survive.
-    # Can be overridden in unit_extra_properties.
-    properties.setdefault("OOMPolicy", "continue")
-
-    # ensure there is a runtime directory where we can put our env file
-    # If already set, can be space-separated list of paths
-    runtime_directories = properties.setdefault("RuntimeDirectory", unit_name).split()
-
-    # runtime directories are always resolved relative to `/run`
-    # grab the first item, if more than one
-    runtime_dir = os.path.join(RUN_ROOT, runtime_directories[0])
-    # make runtime directories private by default
+    # Ensure there is a runtime directory where we can put our env file, make
+    # runtime directories private by default, and preserve runtime directories
+    # across restarts to allow `systemctl restart` to load the env.
+    #
+    # ref: https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectory=
+    # ref: https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectoryMode=
+    # ref: https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectoryPreserve=
+    #
+    properties.setdefault("RuntimeDirectory", unit_name)
     properties.setdefault("RuntimeDirectoryMode", "700")
-    # preserve runtime directories across restarts
-    # allows `systemctl restart` to load the env
     properties.setdefault("RuntimeDirectoryPreserve", "restart")
 
-    if properties:
-        for key, value in properties.items():
-            if isinstance(value, list):
-                run_cmd += [f"--property={key}={v}" for v in value]
-            else:
-                # A string!
-                run_cmd.append(f"--property={key}={value}")
+    # Ensure that out of memory killing of a process run inside the user server
+    # (systemd unit), such as a Jupyter kernel, doesn't result in stopping or
+    # killing the user server.
+    #
+    # ref: https://www.freedesktop.org/software/systemd/man/systemd.service.html#OOMPolicy=
+    #
+    properties.setdefault("OOMPolicy", "continue")
 
+    # Pass configured properties via systemd-run's --property flag
+    for key, value in properties.items():
+        if isinstance(value, list):
+            # The properties dictionary is allowed to have a list of values for
+            # each of its keys as a way of allowing the same key to be passed
+            # multiple times.
+            run_cmd += [f"--property={key}={v}" for v in value]
+        else:
+            # A string!
+            run_cmd.append(f"--property={key}={value}")
+
+    # Create and reference an environment variable file in the first
+    # RuntimeDirectory entry, which is a whitespace-separated list of directory
+    # names.
+    #
+    # ref: https://www.freedesktop.org/software/systemd/man/systemd.exec.html#EnvironmentFile=
+    #
     if environment_variables:
+        runtime_dir = os.path.join(RUN_ROOT, properties["RuntimeDirectory"].split()[0])
         environment_file = make_environment_file(
             runtime_dir, unit_name, environment_variables
         )
         run_cmd.append(f"--property=EnvironmentFile={environment_file}")
 
-    # Explicitly check if uid / gid are not None, since 0 is valid value for both
-    if uid is not None:
-        run_cmd += ["--uid", str(uid)]
-
-    if gid is not None:
-        run_cmd += ["--gid", str(gid)]
-
-    if slice is not None:
-        run_cmd += [f"--slice={slice}"]
-
-    # We unfortunately have to resort to doing cd with bash, since WorkingDirectory property
-    # of systemd units can't be set for transient units via systemd-run until systemd v227.
-    # Centos 7 has systemd 219, and will probably never upgrade - so we need to support them.
-    run_cmd += [
-        "/bin/bash",
-        "-c",
-        "cd {wd} && exec {cmd} {args}".format(
-            wd=shlex.quote(working_dir),
-            cmd=" ".join([shlex.quote(c) for c in cmd]),
-            args=" ".join([shlex.quote(a) for a in args]),
-        ),
-    ]
+    # Append typical Spawner "cmd" and "args" on how to start the user server
+    run_cmd += cmd + args
 
     proc = await asyncio.create_subprocess_exec(*run_cmd)
 
