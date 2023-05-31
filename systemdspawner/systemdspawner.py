@@ -293,12 +293,10 @@ class SystemdSpawner(Spawner):
         env["SHELL"] = self.default_shell
 
         if self.mem_limit is not None:
-            # FIXME: Detect & use proper properties for v1 vs v2 cgroups
             properties["MemoryAccounting"] = "yes"
             properties["MemoryLimit"] = self.mem_limit
 
         if self.cpu_limit is not None:
-            # FIXME: Detect & use proper properties for v1 vs v2 cgroups
             # FIXME: Make sure that the kernel supports CONFIG_CFS_BANDWIDTH
             #        otherwise this doesn't have any effect.
             properties["CPUAccounting"] = "yes"
