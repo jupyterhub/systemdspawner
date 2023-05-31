@@ -40,6 +40,11 @@ target_version = [
 addopts = "--verbose --color=yes --durations=10"
 asyncio_mode = "auto"
 testpaths = ["tests"]
+# warnings we can safely ignore stemming from jupyterhub 3 + sqlalchemy 2
+filterwarnings = [
+    'ignore:.*The new signature is "def engine_connect\(conn\)"*:sqlalchemy.exc.SADeprecationWarning',
+    'ignore:.*The new signature is "def engine_connect\(conn\)"*:sqlalchemy.exc.SAWarning',
+]
 
 
 # tbump is used to simplify and standardize the release process when updating
