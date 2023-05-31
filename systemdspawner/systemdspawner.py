@@ -289,7 +289,7 @@ class SystemdSpawner(Spawner):
                 working_dir = self._expand_user_vars(self.user_workingdir)
 
         if self.cpu_weight:
-            env['CPU_WEIGHT'] = str(self.cpu_weight)                
+            env["CPU_WEIGHT"] = str(self.cpu_weight)
 
         if self.isolate_tmp:
             properties["PrivateTmp"] = "yes"
