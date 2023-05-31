@@ -68,10 +68,11 @@ jobs:
           pip freeze
 
       - name: Run tests
-        # Running tests requires sudo permissions, but we also need to preserve
-        # the PATH to have pytest available etc.
+        # Tests needs to be run as root and we have to specify a non-root
+        # non-nobody system user to test with. We also need to preserve the PATH
+        # when running as root.
         run: |
-          sudo -E "PATH=$PATH" bash -c "pytest --cov=systemdspawner"
+          sudo -E "PATH=$PATH" bash -c "pytest --cov=systemdspawner --system-test-user=$(whoami)"
 
       # GitHub action reference: https://github.com/codecov/codecov-action
       - uses: codecov/codecov-action@v3
