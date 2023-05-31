@@ -85,8 +85,10 @@ async def start_transient_service(
 
     run_cmd = [
         "systemd-run",
-        f"--unit={unit_name}",
-        f"--working-directory={working_dir}",
+        "--unit",
+        unit_name,
+        "--working-directory",
+        working_dir,
     ]
     if uid is not None:
         run_cmd += [f"--uid={uid}"]
