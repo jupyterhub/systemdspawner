@@ -294,7 +294,7 @@ class SystemdSpawner(Spawner):
 
         if self.mem_limit is not None:
             properties["MemoryAccounting"] = "yes"
-            properties["MemoryLimit"] = self.mem_limit
+            properties["MemoryMax"] = self.mem_limit
 
         if self.cpu_limit is not None:
             # FIXME: Make sure that the kernel supports CONFIG_CFS_BANDWIDTH
