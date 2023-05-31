@@ -5,7 +5,7 @@ import sys
 
 from jupyterhub.spawner import Spawner
 from jupyterhub.utils import random_port
-from traitlets import Bool, Dict, List, Unicode, Integer
+from traitlets import Bool, Dict, Integer, List, Unicode
 
 from systemdspawner import systemd
 
@@ -155,7 +155,7 @@ class SystemdSpawner(Spawner):
 
         Acceptable value: an integer between 1 to 10000. 
         System default is 100.
-        """
+        """,
     ).tag(config=True)
 
     def __init__(self, *args, **kwargs):
@@ -321,8 +321,8 @@ class SystemdSpawner(Spawner):
 
         if self.cpu_weight is not None:
             # FIXME: Detect & use proper properties for v1 vs v2 cgroups
-            properties['CPUAccounting'] = 'yes'
-            properties['CPUWeight'] = str(self.cpu_weight)            
+            properties["CPUAccounting"] = "yes"
+            properties["CPUWeight"] = str(self.cpu_weight)
 
         if self.disable_user_sudo:
             properties["NoNewPrivileges"] = "yes"

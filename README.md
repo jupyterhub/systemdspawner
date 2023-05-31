@@ -217,11 +217,11 @@ when other users want to use the CPU.
 
 The share of access each user gets can be adjusted with the `cpu_weight` option.
 
-### `cpu_weight` ###
+### `cpu_weight`
 
-An integer representing the share of CPU time each user can use. A user with 
+An integer representing the share of CPU time each user can use. A user with
 a `cpu_weight` of 200 will get 2x access to the CPU than a user with a `cpu_weight`
-of 100, which is the system default.  
+of 100, which is the system default.
 
 ```python
 c.SystemdSpawner.cpu_weight = 100
