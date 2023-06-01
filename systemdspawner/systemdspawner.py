@@ -293,14 +293,19 @@ class SystemdSpawner(Spawner):
         env["SHELL"] = self.default_shell
 
         if self.mem_limit is not None:
-            # FIXME: Detect & use proper properties for v1 vs v2 cgroups
             properties["MemoryAccounting"] = "yes"
-            properties["MemoryLimit"] = self.mem_limit
+            properties["MemoryMax"] = self.mem_limit
 
         if self.cpu_limit is not None:
-            # FIXME: Detect & use proper properties for v1 vs v2 cgroups
-            # FIXME: Make sure that the kernel supports CONFIG_CFS_BANDWIDTH
-            #        otherwise this doesn't have any effect.
+            # NOTE: The linux kernel must be compiled with the configuration option
+            #       CONFIG_CFS_BANDWIDTH, otherwise CPUQuota doesn't have any
+            #       effect.
+            #
+            #       This can be checked with the check-kernel.bash script in
+            #       this git repository.
+            #
+            #       ref: https://github.com/systemd/systemd/blob/v245/README#L35
+            #
             properties["CPUAccounting"] = "yes"
             properties["CPUQuota"] = f"{int(self.cpu_limit * 100)}%"
 
