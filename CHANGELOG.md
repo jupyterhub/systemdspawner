@@ -16,28 +16,31 @@
 
 - Replace deprecated MemoryLimit with MemoryMax, remove fixme notes [#127](https://github.com/jupyterhub/systemdspawner/pull/127) ([@consideRatio](https://github.com/consideRatio), [@yuvipanda](https://github.com/yuvipanda), [@behrmann](https://github.com/behrmann))
 - Rely on systemd-run's --working-directory, and refactor for readability [#124](https://github.com/jupyterhub/systemdspawner/pull/124) ([@consideRatio](https://github.com/consideRatio), [@behrmann](https://github.com/behrmann), [@minrk](https://github.com/minrk))
-- Add MANIFEST.in to bundle LICENSE in source distribution [#122](https://github.com/jupyterhub/systemdspawner/pull/122) ([@consideRatio](https://github.com/consideRatio))
-- Add basic start/stop test against a jupyterhub [#120](https://github.com/jupyterhub/systemdspawner/pull/120) ([@consideRatio](https://github.com/consideRatio))
-- refactor: remove no longer needed pytest.mark.asyncio [#119](https://github.com/jupyterhub/systemdspawner/pull/119) ([@consideRatio](https://github.com/consideRatio))
-- Require systemd v243+, recommend systemd v245+, test against systemd v245 [#117](https://github.com/jupyterhub/systemdspawner/pull/117) ([@consideRatio](https://github.com/consideRatio))
-- Add test and release automation [#115](https://github.com/jupyterhub/systemdspawner/pull/115) ([@consideRatio](https://github.com/consideRatio))
-- maint, breaking: require python 3.8+, jupyterhub 2.3.0+, tornado 5.1+ [#114](https://github.com/jupyterhub/systemdspawner/pull/114) ([@consideRatio](https://github.com/consideRatio))
-- Add pre-commit for automated formatting [#108](https://github.com/jupyterhub/systemdspawner/pull/108) ([@consideRatio](https://github.com/consideRatio))
-- Disable user sudo by default [#91](https://github.com/jupyterhub/systemdspawner/pull/91) ([@yuvipanda](https://github.com/yuvipanda))
+- Add MANIFEST.in to bundle LICENSE in source distribution [#122](https://github.com/jupyterhub/systemdspawner/pull/122) ([@consideRatio](https://github.com/consideRatio), [@yuvipanda](https://github.com/yuvipanda))
+- Add basic start/stop test against a jupyterhub [#120](https://github.com/jupyterhub/systemdspawner/pull/120) ([@consideRatio](https://github.com/consideRatio), [@minrk](https://github.com/minrk), [@yuvipanda](https://github.com/yuvipanda))
+- refactor: remove no longer needed pytest.mark.asyncio [#119](https://github.com/jupyterhub/systemdspawner/pull/119) ([@consideRatio](https://github.com/consideRatio), [@yuvipanda](https://github.com/yuvipanda))
+- Require systemd v243+, recommend systemd v245+, test against systemd v245 [#117](https://github.com/jupyterhub/systemdspawner/pull/117) ([@consideRatio](https://github.com/consideRatio), [@yuvipanda](https://github.com/yuvipanda), [@minrk](https://github.com/minrk))
+- Add test and release automation [#115](https://github.com/jupyterhub/systemdspawner/pull/115) ([@consideRatio](https://github.com/consideRatio), [@yuvipanda](https://github.com/yuvipanda))
+- maint, breaking: require python 3.8+, jupyterhub 2.3.0+, tornado 5.1+ [#114](https://github.com/jupyterhub/systemdspawner/pull/114) ([@consideRatio](https://github.com/consideRatio), [@yuvipanda](https://github.com/yuvipanda))
+- Add pre-commit for automated formatting [#108](https://github.com/jupyterhub/systemdspawner/pull/108) ([@consideRatio](https://github.com/consideRatio), [@yuvipanda](https://github.com/yuvipanda))
+- Disable user sudo by default [#91](https://github.com/jupyterhub/systemdspawner/pull/91) ([@yuvipanda](https://github.com/yuvipanda), [@consideRatio](https://github.com/consideRatio))
 
 #### Documentation improvements
 
-- docs: add some explanatory notes in files, and small details [#118](https://github.com/jupyterhub/systemdspawner/pull/118) ([@consideRatio](https://github.com/consideRatio))
-- readme: add badges for releases/tests/coverage/issues/discourse [#112](https://github.com/jupyterhub/systemdspawner/pull/112) ([@consideRatio](https://github.com/consideRatio))
-- readme: remove resources section and link to discourse forum instead of mailing list [#111](https://github.com/jupyterhub/systemdspawner/pull/111) ([@consideRatio](https://github.com/consideRatio))
+- docs: add some explanatory notes in files, and small details [#118](https://github.com/jupyterhub/systemdspawner/pull/118) ([@consideRatio](https://github.com/consideRatio), [@yuvipanda](https://github.com/yuvipanda))
+- readme: add badges for releases/tests/coverage/issues/discourse [#112](https://github.com/jupyterhub/systemdspawner/pull/112) ([@consideRatio](https://github.com/consideRatio), [@yuvipanda](https://github.com/yuvipanda))
+- readme: remove resources section and link to discourse forum instead of mailing list [#111](https://github.com/jupyterhub/systemdspawner/pull/111) ([@consideRatio](https://github.com/consideRatio), [@yuvipanda](https://github.com/yuvipanda))
 
 #### Continuous integration improvements
 
-- ci: add dependabot to bump future github actions [#113](https://github.com/jupyterhub/systemdspawner/pull/113) ([@consideRatio](https://github.com/consideRatio))
+- ci: add dependabot to bump future github actions [#113](https://github.com/jupyterhub/systemdspawner/pull/113) ([@consideRatio](https://github.com/consideRatio), [@yuvipanda](https://github.com/yuvipanda))
 
 #### Contributors to this release
 
-([GitHub contributors page for this release](https://github.com/jupyterhub/systemdspawner/graphs/contributors?from=2023-01-11&to=2023-05-25&type=c))
+The following people contributed discussions, new ideas, code and documentation contributions, and review.
+See [our definition of contributors](https://github-activity.readthedocs.io/en/latest/#how-does-this-tool-define-contributions-in-the-reports).
+
+([GitHub contributors page for this release](https://github.com/jupyterhub/systemdspawner/graphs/contributors?from=2023-01-11&to=2023-06-01&type=c))
 
 @astro-arphid ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Aastro-arphid+updated%3A2023-01-11..2023-06-01&type=Issues)) | @behrmann ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Abehrmann+updated%3A2023-01-11..2023-06-01&type=Issues)) | @clhedrick ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Aclhedrick+updated%3A2023-01-11..2023-06-01&type=Issues)) | @consideRatio ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3AconsideRatio+updated%3A2023-01-11..2023-06-01&type=Issues)) | @manics ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Amanics+updated%3A2023-01-11..2023-06-01&type=Issues)) | @minrk ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Aminrk+updated%3A2023-01-11..2023-06-01&type=Issues)) | @yuvipanda ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Ayuvipanda+updated%3A2023-01-11..2023-06-01&type=Issues))
 
