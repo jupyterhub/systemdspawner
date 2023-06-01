@@ -297,7 +297,7 @@ class SystemdSpawner(Spawner):
             properties["MemoryMax"] = self.mem_limit
 
         if self.cpu_limit is not None:
-            # NOTE: The linux kernel must be started with the option
+            # NOTE: The linux kernel must be compiled with the configuration option
             #       CONFIG_CFS_BANDWIDTH, otherwise CPUQuota doesn't have any
             #       effect.
             #
