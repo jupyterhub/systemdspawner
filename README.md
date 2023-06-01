@@ -329,7 +329,7 @@ Defaults to false.
 
 ### `disable_user_sudo`
 
-Setting this to true prevents users from being able to use `sudo` (or any other means) to
+Set to true, this prevents users from being able to use `sudo` (or any other means) to
 become other users (including root). This helps contain damage from a compromise of a user's
 credentials if they also have sudo rights on the machine - a web based exploit will now only
 be able to damage the user's own stuff, rather than have complete root access.
@@ -338,7 +338,7 @@ be able to damage the user's own stuff, rather than have complete root access.
 c.SystemdSpawner.disable_user_sudo = True
 ```
 
-Defaults to false.
+Defaults to True.
 
 ### `readonly_paths`
 
