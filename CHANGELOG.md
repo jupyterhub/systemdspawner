@@ -2,7 +2,7 @@
 
 ## v1.0
 
-### v1.0.0
+### v1.0.0 - 2023-06-01
 
 #### Breaking changes
 
@@ -14,6 +14,8 @@
 
 #### Maintenance and upkeep improvements
 
+- Replace deprecated MemoryLimit with MemoryMax, remove fixme notes [#127](https://github.com/jupyterhub/systemdspawner/pull/127) ([@consideRatio](https://github.com/consideRatio), [@yuvipanda](https://github.com/yuvipanda), [@behrmann](https://github.com/behrmann))
+- Rely on systemd-run's --working-directory, and refactor for readability [#124](https://github.com/jupyterhub/systemdspawner/pull/124) ([@consideRatio](https://github.com/consideRatio), [@behrmann](https://github.com/behrmann), [@minrk](https://github.com/minrk))
 - Add MANIFEST.in to bundle LICENSE in source distribution [#122](https://github.com/jupyterhub/systemdspawner/pull/122) ([@consideRatio](https://github.com/consideRatio))
 - Add basic start/stop test against a jupyterhub [#120](https://github.com/jupyterhub/systemdspawner/pull/120) ([@consideRatio](https://github.com/consideRatio))
 - refactor: remove no longer needed pytest.mark.asyncio [#119](https://github.com/jupyterhub/systemdspawner/pull/119) ([@consideRatio](https://github.com/consideRatio))
@@ -37,7 +39,7 @@
 
 ([GitHub contributors page for this release](https://github.com/jupyterhub/systemdspawner/graphs/contributors?from=2023-01-11&to=2023-05-25&type=c))
 
-[@behrmann](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Abehrmann+updated%3A2023-01-11..2023-05-25&type=Issues) | [@consideRatio](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3AconsideRatio+updated%3A2023-01-11..2023-05-25&type=Issues) | [@manics](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Amanics+updated%3A2023-01-11..2023-05-25&type=Issues) | [@yuvipanda](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Ayuvipanda+updated%3A2023-01-11..2023-05-25&type=Issues)
+@astro-arphid ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Aastro-arphid+updated%3A2023-01-11..2023-06-01&type=Issues)) | @behrmann ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Abehrmann+updated%3A2023-01-11..2023-06-01&type=Issues)) | @clhedrick ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Aclhedrick+updated%3A2023-01-11..2023-06-01&type=Issues)) | @consideRatio ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3AconsideRatio+updated%3A2023-01-11..2023-06-01&type=Issues)) | @manics ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Amanics+updated%3A2023-01-11..2023-06-01&type=Issues)) | @minrk ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Aminrk+updated%3A2023-01-11..2023-06-01&type=Issues)) | @yuvipanda ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Ayuvipanda+updated%3A2023-01-11..2023-06-01&type=Issues))
 
 ## v0.17 - 2023-01-10
 
