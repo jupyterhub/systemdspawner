@@ -126,6 +126,26 @@ async def test_workdir():
             assert text == d
 
 
+async def test_executable_path():
+    unit_name = "systemdspawner-unittest-" + str(time.time())
+    _, env_filename = tempfile.mkstemp()
+    with tempfile.TemporaryDirectory() as d:
+        await systemd.start_transient_service(
+            unit_name,
+            ["bash"],
+            ["-c", f"pwd > {d}/pwd"],
+            working_dir=d,
+            environment_variables={"PATH": os.environ["PATH"]},
+        )
+
+        # Wait a tiny bit for the systemd unit to complete running
+        await asyncio.sleep(0.1)
+
+        with open(os.path.join(d, "pwd")) as f:
+            text = f.read().strip()
+            assert text == d
+
+
 async def test_slice():
     unit_name = "systemdspawner-unittest-" + str(time.time())
     _, env_filename = tempfile.mkstemp()
