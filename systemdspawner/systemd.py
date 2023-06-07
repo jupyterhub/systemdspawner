@@ -148,9 +148,14 @@ async def start_transient_service(
     # systemd-run does not use the unit's $PATH environment
     # to resolve relative paths.
     if not os.path.isabs(cmd[0]):
-        path = os.getenv("PATH", os.defpath)
         if environment_variables and "PATH" in environment_variables:
+            # if unit specifies a $PATH, use it
             path = environment_variables["PATH"]
+        else:
+            # search current process $PATH by default.
+            # this is the default behavior of shutil.which(path=None)
+            # but we still need the value for the error message
+            path = os.getenv("PATH", os.defpath)
         exe = cmd[0]
         abs_exe = shutil.which(exe, path=path)
         if not abs_exe:
