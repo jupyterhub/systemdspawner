@@ -149,7 +149,6 @@ async def start_transient_service(
     # as any other Spawner would behave
     if not os.path.isabs(cmd[0]):
         path = os.getenv("PATH", os.defpath)
-        path = (environment_variables or {}).get("PATH")
         if environment_variables and "PATH" in environment_variables:
             path = environment_variables["PATH"]
         exe = cmd[0]
