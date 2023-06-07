@@ -144,9 +144,9 @@ async def start_transient_service(
         )
         run_cmd.append(f"--property=EnvironmentFile={environment_file}")
 
-    # make sure cmd[0] is absolute, which is a requirement of systemd-run
-    # if it's relative, resolve it with Spawner's $PATH,
-    # as any other Spawner would behave
+    # make sure cmd[0] is absolute, taking $PATH into account.
+    # systemd-run does not use the unit's $PATH environment
+    # to resolve relative paths.
     if not os.path.isabs(cmd[0]):
         path = os.getenv("PATH", os.defpath)
         if environment_variables and "PATH" in environment_variables:
