@@ -9,6 +9,7 @@ import asyncio
 import os
 import re
 import shlex
+import shutil
 import subprocess
 import warnings
 
@@ -142,6 +143,20 @@ async def start_transient_service(
             runtime_dir, unit_name, environment_variables
         )
         run_cmd.append(f"--property=EnvironmentFile={environment_file}")
+
+    # make sure cmd[0] is absolute, which is a requirement of systemd-run
+    # if it's relative, resolve it with Spawner's $PATH,
+    # as any other Spawner would behave
+    if not os.path.isabs(cmd[0]):
+        path = os.getenv("PATH", os.defpath)
+        path = (environment_variables or {}).get("PATH")
+        if environment_variables and "PATH" in environment_variables:
+            path = environment_variables["PATH"]
+        exe = cmd[0]
+        abs_exe = shutil.which(exe, path=path)
+        if not abs_exe:
+            raise FileNotFoundError(f"{exe} not found on {path}")
+        cmd[0] = abs_exe
 
     # Append typical Spawner "cmd" and "args" on how to start the user server
     run_cmd += cmd + args
