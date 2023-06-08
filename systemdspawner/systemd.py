@@ -6,6 +6,7 @@ Probably not very useful outside this spawner.
 """
 
 import asyncio
+import functools
 import os
 import re
 import shlex
@@ -222,6 +223,7 @@ async def reset_service(unit_name):
     await proc.wait()
 
 
+@functools.lru_cache
 def get_systemd_version():
     """
     Returns systemd's major version, or None if failing to do so.
