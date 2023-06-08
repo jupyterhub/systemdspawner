@@ -2,6 +2,24 @@
 
 ## v1.0
 
+### v1.0.1 - 2023-06-08
+
+#### Bugs fixed
+
+- ensure executable paths are absolute [#129](https://github.com/jupyterhub/systemdspawner/pull/129) ([@minrk](https://github.com/minrk), [@consideRatio](https://github.com/consideRatio), [@behrmann](https://github.com/behrmann), [@manics](https://github.com/manics))
+
+#### Maintenance and upkeep improvements
+
+- Use warnings.warn instead of self.log.warning to help avoid duplications [#133](https://github.com/jupyterhub/systemdspawner/pull/133) ([@consideRatio](https://github.com/consideRatio), [@minrk](https://github.com/minrk))
+- Cache check of systemd version [#132](https://github.com/jupyterhub/systemdspawner/pull/132) ([@consideRatio](https://github.com/consideRatio), [@minrk](https://github.com/minrk))
+
+#### Contributors to this release
+
+The following people contributed discussions, new ideas, code and documentation contributions, and review.
+See [our definition of contributors](https://github-activity.readthedocs.io/en/latest/#how-does-this-tool-define-contributions-in-the-reports).
+
+@behrmann ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Abehrmann+updated%3A2023-06-01..2023-06-08&type=Issues)) | @consideRatio ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3AconsideRatio+updated%3A2023-06-01..2023-06-08&type=Issues)) | @manics ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Amanics+updated%3A2023-06-01..2023-06-08&type=Issues)) | @minrk ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Aminrk+updated%3A2023-06-01..2023-06-08&type=Issues))
+
 ### v1.0.0 - 2023-06-01
 
 #### Breaking changes
