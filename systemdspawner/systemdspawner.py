@@ -2,6 +2,7 @@ import asyncio
 import os
 import pwd
 import sys
+import warnings
 
 from jupyterhub.spawner import Spawner
 from jupyterhub.utils import random_port
@@ -157,16 +158,16 @@ class SystemdSpawner(Spawner):
 
         systemd_version = systemd.get_systemd_version()
         if systemd_version is None:
-            self.log.warning(
-                "Failed to parse systemd version from 'systemctl --version'"
-            )
+            # not found, nothing to check
+            # already warned about this in get_systemd_version
+            pass
         elif systemd_version < SYSTEMD_REQUIRED_VERSION:
             self.log.critical(
                 f"systemd version {SYSTEMD_REQUIRED_VERSION} or higher is required, version {systemd_version} is used"
             )
             sys.exit(1)
         elif systemd_version < SYSTEMD_LOWEST_RECOMMENDED_VERSION:
-            self.log.warning(
+            warnings.warn(
                 f"systemd version {SYSTEMD_LOWEST_RECOMMENDED_VERSION} or higher is recommended, version {systemd_version} is used"
             )
 
