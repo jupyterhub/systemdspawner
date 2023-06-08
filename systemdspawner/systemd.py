@@ -228,6 +228,14 @@ def get_systemd_version():
     """
     try:
         version_response = subprocess.check_output(["systemctl", "--version"])
+    except Exception as e:
+        warnings.warn(
+            f"Failed to run `systemctl --version` to get systemd version: {e}",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+
+    try:
         # Example response from Ubuntu 22.04:
         #
         # systemd 249 (249.11-0ubuntu3.9)
@@ -235,5 +243,10 @@ def get_systemd_version():
         #
         version = int(float(version_response.split()[1]))
         return version
-    except:
+    except Exception as e:
+        warnings.warn(
+            f"Failed to parse systemd version from `systemctl --version`: {e}. output={version_response}",
+            RuntimeWarning,
+            stacklevel=2,
+        )
         return None

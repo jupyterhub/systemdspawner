@@ -158,7 +158,9 @@ class SystemdSpawner(Spawner):
 
         systemd_version = systemd.get_systemd_version()
         if systemd_version is None:
-            warnings.warn("Failed to parse systemd version from 'systemctl --version'")
+            # not found, nothing to check
+            # already warned about this in get_systemd_version
+            pass
         elif systemd_version < SYSTEMD_REQUIRED_VERSION:
             self.log.critical(
                 f"systemd version {SYSTEMD_REQUIRED_VERSION} or higher is required, version {systemd_version} is used"
