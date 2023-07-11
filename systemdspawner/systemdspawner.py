@@ -129,12 +129,28 @@ class SystemdSpawner(Spawner):
 
         Uses the DynamicUser= feature of Systemd to make a new system user
         for each hub user dynamically. Their home directories are set up
-        under /var/lib/{USERNAME}, and persist over time. The system user
-        is deallocated whenever the user's server is not running.
+        in the state directories configured by the dynamic_user_statedir
+        option, and persist over time. The system user is deallocated whenever
+        the user's server is not running.
 
         See http://0pointer.net/blog/dynamic-users-with-systemd.html for more
         information.
         """,
+    ).tag(config=True)
+
+    dynamic_user_statedir = Unicode(
+        "{USERNAME}",
+        help="""
+        The state directory for dynamic users. This is the name of a persistent
+        directory under /var/lib.
+
+        {USERNAME} and {USERID} are expanded.
+
+        Defaults to {USERNAME}, corresponding to a filesystem directory
+        /var/lib/{USERNAME}.
+
+        Ignored if dynamic_users is set to False.
+        """
     ).tag(config=True)
 
     slice = Unicode(
@@ -255,10 +271,34 @@ class SystemdSpawner(Spawner):
 
         if self.dynamic_users:
             properties["DynamicUser"] = "yes"
-            properties["StateDirectory"] = self._expand_user_vars("{USERNAME}")
 
-            # HOME is not set by default otherwise
-            env["HOME"] = self._expand_user_vars("/var/lib/{USERNAME}")
+            # Expand the state directory for the unit. Perform some basic checks on the
+            # directory name so we can give a more obvious error than systemd would.
+            statedir = self._expand_user_vars(self.dynamic_user_statedir)
+            if os.path.isabs(statedir):
+                self.log.error(
+                    "User %s: StateDirectory (%s) cannot be absolute",
+                    self.user.name,
+                    statedir
+                )
+                raise Exception(f"StateDirectory ({statedir}) cannot be absolute")
+
+            testpath = statedir
+            while testpath:
+                testpath, component = os.path.split(testpath)
+                if component == "..":
+                    self.log.error(
+                        "User %s: StateDirectory (%s) cannot contain ..",
+                        self.user.name,
+                        statedir
+                    )
+                    raise Exception(f"StateDirectory ({statedir}) cannot contain ..")
+
+            properties["StateDirectory"] = statedir
+
+            # HOME is not set by default otherwise. Systemd places the state
+            # directory under /var/lib.
+            env["HOME"] = f"/var/lib/{statedir}"
             # Set working directory to $HOME too
             working_dir = env["HOME"]
             # Set uid, gid = None so we don't set them

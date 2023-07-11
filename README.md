@@ -155,6 +155,7 @@ in your `jupyterhub_config.py` file:
 - **[`readonly_paths`](#readonly_paths)**
 - **[`readwrite_paths`](#readwrite_paths)**
 - **[`dynamic_users`](#dynamic_users)**
+- **[`dynamic_user_statedir`](#dynamic_user_statedir)**
 
 ### `mem_limit`
 
@@ -377,13 +378,31 @@ Defaults to `None` which disables this feature.
 
 Allocate system users dynamically for each user.
 
-Uses the DynamicUser= feature of Systemd to make a new system user
-for each hub user dynamically. Their home directories are set up
-under /var/lib/{USERNAME}, and persist over time. The system user
+Uses the DynamicUser= feature of Systemd to make a new system user for each hub
+user dynamically. Their home directories are set up in the directories
+configured by `dynamic_user_statedir`, and persist over time.  The system user
 is deallocated whenever the user's server is not running.
 
 See http://0pointer.net/blog/dynamic-users-with-systemd.html for more
 information.
+
+### `dynamic_user_statedir`
+
+The name of the state directory for a dynamic user. This will correspond to a
+directory under /var/lib (this base path is enforced by systemd) which will
+persist between uses. The home and working directory of the user's server will
+also be set to this state directory.
+
+`{USERNAME}` and `{USERID}` will be expanded to the appropriate values for the
+user being spawned. The default is {USERNAME}, corresponding to a filesystem
+path /var/lib/{USERNAME}.
+
+Note that systemd will create the state directories in /var/lib/private and
+symlink them into /var/lib (see
+http://0pointer.net/blog/dynamic-users-with-systemd.html for more information).
+Any desired backups should therefore be taken from the /var/lib/private paths.
+
+This value is ignored if `dynamic_users` is set to False.
 
 ### `slice`
 
