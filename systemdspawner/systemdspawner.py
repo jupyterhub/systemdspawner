@@ -150,7 +150,7 @@ class SystemdSpawner(Spawner):
         /var/lib/{USERNAME}.
 
         Ignored if dynamic_users is set to False.
-        """
+        """,
     ).tag(config=True)
 
     slice = Unicode(
@@ -279,7 +279,7 @@ class SystemdSpawner(Spawner):
                 self.log.error(
                     "User %s: StateDirectory (%s) cannot be absolute",
                     self.user.name,
-                    statedir
+                    statedir,
                 )
                 raise Exception(f"StateDirectory ({statedir}) cannot be absolute")
 
@@ -290,7 +290,7 @@ class SystemdSpawner(Spawner):
                     self.log.error(
                         "User %s: StateDirectory (%s) cannot contain ..",
                         self.user.name,
-                        statedir
+                        statedir,
                     )
                     raise Exception(f"StateDirectory ({statedir}) cannot contain ..")
 

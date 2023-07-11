@@ -380,7 +380,7 @@ Allocate system users dynamically for each user.
 
 Uses the DynamicUser= feature of Systemd to make a new system user for each hub
 user dynamically. Their home directories are set up in the directories
-configured by `dynamic_user_statedir`, and persist over time.  The system user
+configured by `dynamic_user_statedir`, and persist over time. The system user
 is deallocated whenever the user's server is not running.
 
 See http://0pointer.net/blog/dynamic-users-with-systemd.html for more
