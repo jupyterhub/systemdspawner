@@ -6,7 +6,7 @@ import warnings
 
 from jupyterhub.spawner import Spawner
 from jupyterhub.utils import random_port
-from traitlets import Bool, Dict, List, Unicode
+from traitlets import Bool, Dict, Integer, List, Unicode
 
 from systemdspawner import systemd
 
@@ -147,6 +147,18 @@ class SystemdSpawner(Spawner):
         """,
     ).tag(config=True)
 
+    cpu_weight = Integer(
+        None,
+        allow_none=True,
+        help="""
+        Assign a CPU weight to the single-user notebook server.
+        Available CPU time is allocated in proportion to each user's weight.
+
+        Acceptable value: an integer between 1 to 10000. 
+        System default is 100.
+        """,
+    ).tag(config=True)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # All traitlets configurables are configured by now
@@ -277,6 +289,9 @@ class SystemdSpawner(Spawner):
             else:
                 working_dir = self._expand_user_vars(self.user_workingdir)
 
+        if self.cpu_weight:
+            env["CPU_WEIGHT"] = str(self.cpu_weight)
+
         if self.isolate_tmp:
             properties["PrivateTmp"] = "yes"
 
@@ -309,6 +324,11 @@ class SystemdSpawner(Spawner):
             #
             properties["CPUAccounting"] = "yes"
             properties["CPUQuota"] = f"{int(self.cpu_limit * 100)}%"
+
+        if self.cpu_weight is not None:
+            # FIXME: Detect & use proper properties for v1 vs v2 cgroups
+            properties["CPUAccounting"] = "yes"
+            properties["CPUWeight"] = str(self.cpu_weight)
 
         if self.disable_user_sudo:
             properties["NoNewPrivileges"] = "yes"
