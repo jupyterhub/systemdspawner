@@ -75,4 +75,4 @@ jobs:
           sudo -E "PATH=$PATH" bash -c "pytest --cov=systemdspawner --system-test-user=$(whoami)"
 
       # GitHub action reference: https://github.com/codecov/codecov-action
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
