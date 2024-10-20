@@ -2,6 +2,29 @@
 
 ## v1.0
 
+### v1.0.2 - 2024-10-20
+
+#### Bugs fixed
+
+- Stop assuming PATH env is defined when extra_paths is set, and then initialize to os.defpath [#144](https://github.com/jupyterhub/systemdspawner/pull/144) ([@consideRatio](https://github.com/consideRatio), [@minrk](https://github.com/minrk))
+
+#### Continuous integration improvements
+
+- ci: test jupyterhub 5, python 3.12, ubuntu 24.04 [#143](https://github.com/jupyterhub/systemdspawner/pull/143) ([@consideRatio](https://github.com/consideRatio))
+- Bump codecov/codecov-action from 3 to 4 [#140](https://github.com/jupyterhub/systemdspawner/pull/140) ([@consideRatio](https://github.com/consideRatio))
+- Bump actions/setup-python from 4 to 5 [#139](https://github.com/jupyterhub/systemdspawner/pull/139) ([@consideRatio](https://github.com/consideRatio))
+- Bump actions/setup-node from 3 to 4 [#137](https://github.com/jupyterhub/systemdspawner/pull/137) ([@consideRatio](https://github.com/consideRatio))
+- Bump actions/checkout from 3 to 4 [#136](https://github.com/jupyterhub/systemdspawner/pull/136) ([@consideRatio](https://github.com/consideRatio))
+
+#### Contributors to this release
+
+The following people contributed discussions, new ideas, code and documentation contributions, and review.
+See [our definition of contributors](https://github-activity.readthedocs.io/en/latest/#how-does-this-tool-define-contributions-in-the-reports).
+
+([GitHub contributors page for this release](https://github.com/jupyterhub/systemdspawner/graphs/contributors?from=2023-06-08&to=2024-10-20&type=c))
+
+@consideRatio ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3AconsideRatio+updated%3A2023-06-08..2024-10-20&type=Issues)) | @Frank-Steiner ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3AFrank-Steiner+updated%3A2023-06-08..2024-10-20&type=Issues)) | @manics ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Amanics+updated%3A2023-06-08..2024-10-20&type=Issues)) | @minrk ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Aminrk+updated%3A2023-06-08..2024-10-20&type=Issues)) | @yuvipanda ([activity](https://github.com/search?q=repo%3Ajupyterhub%2Fsystemdspawner+involves%3Ayuvipanda+updated%3A2023-06-08..2024-10-20&type=Issues))
+
 ### v1.0.1 - 2023-06-08
 
 #### Bugs fixed
