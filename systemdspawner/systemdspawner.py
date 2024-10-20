@@ -284,12 +284,11 @@ class SystemdSpawner(Spawner):
             properties["PrivateDevices"] = "yes"
 
         if self.extra_paths:
-            env["PATH"] = "{extrapath}:{curpath}".format(
-                curpath=env["PATH"],
-                extrapath=":".join(
-                    [self._expand_user_vars(p) for p in self.extra_paths]
-                ),
-            )
+            new_path_list = [self._expand_user_vars(p) for p in self.extra_paths]
+            current_path = env.get("PATH")
+            if current_path:
+                new_path_list.append(current_path)
+            env["PATH"] = ":".join(new_path_list)
 
         env["SHELL"] = self.default_shell
 
