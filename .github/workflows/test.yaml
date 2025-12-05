@@ -29,12 +29,6 @@ jobs:
       matrix:
         include:
           # oldest supported python and jupyterhub version
-          - python-version: "3.8"
-            pip-install-spec: "jupyterhub==2.3.0 tornado==5.1.0 sqlalchemy==1.*"
-            runs-on: ubuntu-20.04
-          - python-version: "3.9"
-            pip-install-spec: "jupyterhub==2.* sqlalchemy==1.*"
-            runs-on: ubuntu-22.04
           - python-version: "3.10"
             pip-install-spec: "jupyterhub==3.*"
             runs-on: ubuntu-22.04
