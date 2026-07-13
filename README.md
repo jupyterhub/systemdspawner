@@ -145,7 +145,6 @@ in your `jupyterhub_config.py` file:
 - **[`cpu_limit`](#cpu_limit)**
 - **[`user_workingdir`](#user_workingdir)**
 - **[`username_template`](#username_template)**
-- **[`default_shell`](#default_shell)**
 - **[`extra_paths`](#extra_paths)**
 - **[`unit_name_template`](#unit_name_template)**
 - **[`unit_extra_properties`](#unit_extra_properties)**
@@ -242,18 +241,6 @@ c.SystemdSpawner.username_template = 'jupyter-{USERNAME}'
 ```
 
 Not respected if `dynamic_users` is set to True
-
-### `default_shell`
-
-The default shell to use for the terminal in the notebook. Sets the `SHELL` environment
-variable to this.
-
-```python
-c.SystemdSpawner.default_shell = '/bin/bash'
-```
-
-Defaults to whatever the value of the `SHELL` environment variable is in the JupyterHub
-process, or `/bin/bash` if `SHELL` isn't set.
 
 ### `extra_paths`
 
