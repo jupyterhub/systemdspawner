@@ -3,19 +3,13 @@ import os
 import pwd
 import sys
 import warnings
-import subprocess
-from traitlets import Bool, Unicode, List, Dict
-import asyncio
-import string
+from traitlets import Int, Bool, Unicode, List, Dict
 
-import escapism
 from systemdspawner import systemd
+from systemdspawner.slugs import safe_slug
 
 from jupyterhub.spawner import Spawner
 from jupyterhub.utils import random_port
-from traitlets import Bool, Dict, List, Unicode
-
-from systemdspawner import systemd
 
 SYSTEMD_REQUIRED_VERSION = 243
 SYSTEMD_LOWEST_RECOMMENDED_VERSION = 245
@@ -68,7 +62,7 @@ class SystemdSpawner(Spawner):
         help="""
         Template to use to make the systemd service names.
 
-        {USERNAME} and {USERID} are expanded}
+        {USERNAME}, {USERID} and {SERVERNAME} are expanded
         """
     ).tag(config=True)
 
@@ -154,44 +148,27 @@ class SystemdSpawner(Spawner):
         """,
     ).tag(config=True)
 
-    unit_trailing_character = Unicode(
-        '-',
+    # Unique names for the unit names by appending hashes at the end.
+    unique_systemd_unit_name = Bool(
+        True,
         help="""
-        When using a unit that ends in a SERVERNAME strip this character from the end of the parsed string. 
-        """
+        Ensure unique names for systemd service units by appending random hash
+        to the end of the name
+        """,
     ).tag(config=True)
 
-    escape_char = Unicode(
-        ':',
-        help="""
-        The character to change invalid safe characters to.
-        """
-    ).tag(config=True)
-
-    unit_trailing_character = Unicode(
-        '-',
-        help="""
-        When using a unit that ends in a SERVERNAME strip this character from the end of the parsed string. 
-        """
-    ).tag(config=True)
-
-    escape_char = Unicode(
-        ':',
-        help="""
-        The character to change invalid safe characters to.
-        """
-    ).tag(config=True)
-
-    # Characters that are safe for systemd units.
-    safe_chars = set(string.ascii_lowercase + string.digits + string.ascii_uppercase + ':-_.\\')
-    max_unit_length = 248
+    # Maximum length that is safe for systemd units.
+    max_unit_length = Int(248)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # All traitlets configurables are configured by now
-        self.unit_name = self._expand_user_vars(self.unit_name_template)
-        if self.append_name and self.name:
-            self.unit_name = self.unit_name + '-' + self.name
+        # Always generate a safe name for systemd unit with hash to avoid collisions
+        self.unit_name = safe_slug(
+            self._expand_user_vars(self.unit_name_template),
+            max_length=self.max_unit_length,
+            avoid_collisions=self.unique_systemd_unit_name,
+        )
 
         self.log.debug(
             "user:%s Initialized spawner with unit %s", self.user.name, self.unit_name
@@ -212,15 +189,6 @@ class SystemdSpawner(Spawner):
                 f"systemd version {SYSTEMD_LOWEST_RECOMMENDED_VERSION} or higher is recommended, version {systemd_version} is used"
             )
 
-    def _escape_variable(self, in_string):
-        """
-        Escape variables for systemd unit naming
-        """
-        if len(in_string) > self.max_unit_length:
-            self.log.warning(f'String is longer than {self.max_unit_length}')
-        # Slice the string to the max unit length
-        return escapism.escape(in_string[:self.max_unit_length], safe=self.safe_chars, escape_char=self.escape_char)
-
     def _expand_user_vars(self, in_string):
         """
         Expand user related variables in a given string
@@ -231,11 +199,11 @@ class SystemdSpawner(Spawner):
           {SERVERNAME} -> Name of the server (self.name)
         """
         # Strip the trailing - if we don't have a name.
-        return self._escape_variable(in_string.format(
+        return in_string.format(
             USERNAME=self.user.name,
             USERID=self.user.id,
             SERVERNAME=self.name
-        )).rstrip(self.unit_trailing_character)
+        )
 
     def get_state(self):
         """
