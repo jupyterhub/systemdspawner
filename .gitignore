@@ -88,3 +88,8 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# JupyterHub run files
+jupyterhub_cookie_secret
+jupyterhub-proxy.pid
+jupyterhub.sqlite

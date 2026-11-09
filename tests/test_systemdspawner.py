@@ -25,7 +25,8 @@ async def test_start_stop(hub_app, systemdspawner_config, pytestconfig):
         ubunutu.
     """
     username = pytestconfig.getoption("--system-test-user", skip=True)
-    unit_name = f"jupyter-{username}-singleuser.service"
+    # Use wild card as generated unique hash will be different on each run
+    unit_name = f"jupyter-{username}-singleuser*"
 
     test_config = {}
     systemdspawner_config.merge(test_config)

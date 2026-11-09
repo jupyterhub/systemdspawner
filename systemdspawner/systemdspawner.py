@@ -3,12 +3,13 @@ import os
 import pwd
 import sys
 import warnings
+from traitlets import Int, Bool, Unicode, List, Dict
+
+from systemdspawner import systemd
+from systemdspawner.slugs import safe_slug
 
 from jupyterhub.spawner import Spawner
 from jupyterhub.utils import random_port
-from traitlets import Bool, Dict, List, Unicode
-
-from systemdspawner import systemd
 
 SYSTEMD_REQUIRED_VERSION = 243
 SYSTEMD_LOWEST_RECOMMENDED_VERSION = 245
@@ -57,12 +58,12 @@ class SystemdSpawner(Spawner):
     ).tag(config=True)
 
     unit_name_template = Unicode(
-        "jupyter-{USERNAME}-singleuser",
+        "jupyter-{USERNAME}-singleuser-{SERVERNAME}",
         help="""
         Template to use to make the systemd service names.
 
-        {USERNAME} and {USERID} are expanded}
-        """,
+        {USERNAME}, {USERID} and {SERVERNAME} are expanded
+        """
     ).tag(config=True)
 
     isolate_tmp = Bool(
@@ -147,10 +148,27 @@ class SystemdSpawner(Spawner):
         """,
     ).tag(config=True)
 
+    # Unique names for the unit names by appending hashes at the end.
+    unique_systemd_unit_name = Bool(
+        True,
+        help="""
+        Ensure unique names for systemd service units by appending random hash
+        to the end of the name
+        """,
+    ).tag(config=True)
+
+    # Maximum length that is safe for systemd units.
+    max_unit_length = Int(248)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # All traitlets configurables are configured by now
-        self.unit_name = self._expand_user_vars(self.unit_name_template)
+        # Always generate a safe name for systemd unit with hash to avoid collisions
+        self.unit_name = safe_slug(
+            self._expand_user_vars(self.unit_name_template),
+            max_length=self.max_unit_length,
+            avoid_collisions=self.unique_systemd_unit_name,
+        )
 
         self.log.debug(
             "user:%s Initialized spawner with unit %s", self.user.name, self.unit_name
@@ -171,15 +189,21 @@ class SystemdSpawner(Spawner):
                 f"systemd version {SYSTEMD_LOWEST_RECOMMENDED_VERSION} or higher is recommended, version {systemd_version} is used"
             )
 
-    def _expand_user_vars(self, string):
+    def _expand_user_vars(self, in_string):
         """
         Expand user related variables in a given string
 
         Currently expands:
           {USERNAME} -> Name of the user
           {USERID} -> UserID
+          {SERVERNAME} -> Name of the server (self.name)
         """
-        return string.format(USERNAME=self.user.name, USERID=self.user.id)
+        # Strip the trailing - if we don't have a name.
+        return in_string.format(
+            USERNAME=self.user.name,
+            USERID=self.user.id,
+            SERVERNAME=self.name
+        )
 
     def get_state(self):
         """
