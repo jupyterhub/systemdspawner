@@ -43,7 +43,8 @@ class SystemdSpawner(Spawner):
     ).tag(config=True)
 
     default_shell = Unicode(
-        os.environ.get("SHELL", "/bin/bash"),
+        None,
+        allow_none=True,
         help="Default shell for users on the notebook terminal",
     ).tag(config=True)
 
@@ -290,7 +291,7 @@ class SystemdSpawner(Spawner):
                 new_path_list.append(current_or_default_path)
             env["PATH"] = ":".join(new_path_list)
 
-        env["SHELL"] = self.default_shell
+        env["SHELL"] = self.default_shell or pwnam.pw_shell
 
         if self.mem_limit is not None:
             properties["MemoryAccounting"] = "yes"
