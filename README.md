@@ -252,8 +252,7 @@ variable to this.
 c.SystemdSpawner.default_shell = '/bin/bash'
 ```
 
-Defaults to whatever the value of the `SHELL` environment variable is in the JupyterHub
-process, or `/bin/bash` if `SHELL` isn't set.
+If not set, the user's login shell is used.
 
 ### `extra_paths`
 
